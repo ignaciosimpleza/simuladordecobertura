@@ -122,6 +122,89 @@ body { font-family: var(--font); background: var(--c-bg); color: var(--c-dark); 
   font-size: 10px; color: var(--c-mid);
   background: rgba(0,0,0,0.05); padding: 4px 10px; border-radius: 20px;
 }
+.btn-print {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--font); font-size: 11px; font-weight: 600;
+  color: var(--c-dark); background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.12);
+  padding: 5px 12px; border-radius: 20px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-print:hover {
+  background: var(--c-accent); color: var(--c-sidebar);
+  border-color: var(--c-accent);
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  @page { size: A4 portrait; margin: 14mm 12mm 14mm 12mm; }
+
+  .no-print, #sidebar, #topbar { display: none !important; }
+
+  body { background: #fff !important; color: #000 !important; font-size: 10px; }
+
+  #main {
+    margin-left: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .page { padding: 0 !important; animation: none !important; }
+
+  /* ── Print header ── */
+  .print-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #2d3436;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+  .print-header-title { font-size: 14px; font-weight: 800; color: #2d3436; }
+  .print-header-sub   { font-size: 10px; color: #7F7F7F; margin-top: 2px; }
+  .print-header-logo  { font-size: 18px; font-weight: 800; color: #2d3436; }
+
+  /* ── Sections ── */
+  .section-header h1 { font-size: 13px !important; }
+  .section-header p  { font-size: 9px !important; }
+
+  /* ── Crop selector: simplify for print ── */
+  .crop-section { box-shadow: none !important; border: 1px solid #ddd !important; padding: 8px 12px !important; margin-bottom: 10px !important; }
+  .crop-btn { padding: 5px 10px !important; min-width: 55px !important; font-size: 10px !important; }
+  .crop-icon { font-size: 16px !important; }
+
+  /* ── Params ── */
+  .param-grid { gap: 8px !important; margin-bottom: 10px !important; }
+  .param-card { padding: 10px 12px !important; box-shadow: none !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
+  .param-label { font-size: 8px !important; }
+  input[type="number"] { background: transparent !important; border: none !important; font-size: 13px !important; font-weight: 700 !important; padding: 0 !important; box-shadow: none !important; }
+
+  /* ── KPI ── */
+  .kpi-grid { gap: 8px !important; margin-bottom: 10px !important; }
+  .kpi-card { padding: 10px 12px !important; box-shadow: none !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
+  .kpi-value { font-size: 16px !important; }
+
+  /* ── Chart ── */
+  .chart-card { box-shadow: none !important; border: 1px solid #ddd !important; padding: 12px !important; page-break-inside: avoid; }
+  .chart-wrap { height: 240px !important; }
+
+  /* ── Table ── */
+  .table-card { box-shadow: none !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
+  table.data-table th { font-size: 8px !important; padding: 6px 8px !important; }
+  table.data-table td { font-size: 9px !important; padding: 6px 8px !important; }
+
+  /* ── Desc cards ── */
+  .desc-grid { gap: 8px !important; }
+  .desc-card { box-shadow: none !important; border: 1px solid #ddd !important; padding: 8px 10px !important; page-break-inside: avoid; }
+  .desc-title { font-size: 10px !important; }
+  .desc-text  { font-size: 9px !important; }
+
+  /* ── Misc ── */
+  .section-divider { margin: 10px 0 !important; }
+  .warning-box.show { font-size: 9px !important; }
+  .fetch-info { display: none !important; }
+  .evolution-tag { background: #6C868C !important; }
+}
 
 /* ── MAIN ── */
 #main {
@@ -425,10 +508,10 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   <div class="nav-item" onclick="setStrat('sintetico')" id="nav-sintetico"><span class="nav-icon">⚙️</span> Futuro Sintético</div>
 
   <div class="sidebar-section">Estrategias Avanzadas</div>
-  <div class="nav-item" onclick="setStrat('collar')"      id="nav-collar">      <span class="nav-icon">🔒</span> Collar <span class="nav-tag">NUEVO</span></div>
-  <div class="nav-item" onclick="setStrat('bull_spread')" id="nav-bull_spread"> <span class="nav-icon">📊</span> Bull Spread <span class="nav-tag">NUEVO</span></div>
-  <div class="nav-item" onclick="setStrat('forward_min')" id="nav-forward_min"> <span class="nav-icon">🎯</span> Forward Mínimo <span class="nav-tag">NUEVO</span></div>
-  <div class="nav-item" onclick="setStrat('acumulador')"  id="nav-acumulador">  <span class="nav-icon">⚠️</span> Acumulador <span class="nav-tag">NUEVO</span></div>
+  <div class="nav-item" onclick="setStrat('collar')"      id="nav-collar">      <span class="nav-icon">🔒</span> Collar</div>
+  <div class="nav-item" onclick="setStrat('bull_spread')" id="nav-bull_spread"> <span class="nav-icon">📊</span> Bull Spread</div>
+  <div class="nav-item" onclick="setStrat('forward_min')" id="nav-forward_min"> <span class="nav-icon">🎯</span> Forward Mínimo</div>
+  <div class="nav-item" onclick="setStrat('acumulador')"  id="nav-acumulador">  <span class="nav-icon">⚠️</span> Acumulador</div>
 
   <div class="sidebar-strategy-info">
     <div class="ssi-label">Estrategia activa</div>
@@ -447,6 +530,9 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   <div class="topbar-right">
     <div class="topbar-crop-badge" id="topbar-crop">🫘 Soja</div>
     <div class="topbar-version">v2.1 · 10 estrategias</div>
+    <button class="btn-print no-print" onclick="window.print()" title="Imprimir / Guardar PDF">
+      🖨 Imprimir PDF
+    </button>
     <div class="topbar-badge" id="topbar-badge">🛡 PUT</div>
   </div>
 </div>
@@ -454,6 +540,15 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
 <!-- ══════════════ MAIN ══════════════ -->
 <div id="main">
 <div class="page">
+
+  <!-- Print header (hidden on screen, visible on print) -->
+  <div class="print-header" style="display:none">
+    <div>
+      <div class="print-header-title">Simpleza · Simulador de Cobertura de Granos</div>
+      <div class="print-header-sub" id="print-date"></div>
+    </div>
+    <div class="print-header-logo">Simpleza</div>
+  </div>
 
   <div class="section-header">
     <h1>Análisis de Estrategia <span class="evolution-tag" id="header-strat-tag">Compra de PUT</span></h1>
@@ -684,6 +779,7 @@ const CROP_DEFAULTS = {
 };
 
 let currentCrop    = 'soja';
+let lastFetchInfo  = null; // {fechaStr, circ}
 let currentStratKey = 'put';
 
 function setCrop(crop) {
@@ -700,6 +796,7 @@ function setCrop(crop) {
   document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('crop-' + crop).classList.add('active');
   document.getElementById('topbar-crop').textContent = d.label;
+  updateFetchStatusForCrop(crop);
   render();
 }
 
@@ -814,14 +911,14 @@ const SCENARIOS = [
 const DESC_CARDS = [
   { key:'spot',        title:'Venta Directa',     text:'Sin cobertura. PVF = mercado. Máximo riesgo y máximo beneficio potencial.' },
   { key:'futuro',      title:'Venta a Futuro',    text:'Precio acordado total en MATBA/ROFEX. Ideal si el precio actual garantiza rentabilidad.' },
-  { key:'washout',     title:'Washout',            text:'Liquidación de forward por diferencia. PVF = precio pactado, sin entrega física de grano.', isNew:true },
+  { key:'washout',     title:'Washout',            text:'Liquidación de forward por diferencia. PVF = precio pactado, sin entrega física de grano.' },
   { key:'put',         title:'Compra de PUT',     text:'Piso garantizado menos prima. Participa plenamente en subas.' },
   { key:'call_lanzado',title:'CALL Lanzado',      text:'Cobra prima hoy, cede el upside por encima del Strike.' },
   { key:'sintetico',   title:'Futuro Sintético',  text:'Piso de precio + participación alcista ilimitada.' },
-  { key:'collar',      title:'Collar',            text:'Banda de precios: piso PUT financiado por CALL vendido.', isNew:true },
-  { key:'bull_spread', title:'Bull Spread',       text:'Protección parcial de menor costo entre dos strikes.', isNew:true },
-  { key:'forward_min', title:'Forward c/Mínimo',  text:'Garantiza el precio base y captura subas de mercado.', isNew:true },
-  { key:'acumulador',  title:'Acumulador',        text:'⚠️ Alto riesgo. Pérdidas ilimitadas sobre la barrera.', isNew:true },
+  { key:'collar',      title:'Collar',            text:'Banda de precios: piso PUT financiado por CALL vendido.' },
+  { key:'bull_spread', title:'Bull Spread',       text:'Protección parcial de menor costo entre dos strikes.' },
+  { key:'forward_min', title:'Forward c/Mínimo',  text:'Garantiza el precio base y captura subas de mercado.' },
+  { key:'acumulador',  title:'Acumulador',        text:'⚠️ Alto riesgo. Pérdidas ilimitadas sobre la barrera.' },
 ];
 
 // ═══════════════════════════════════════════════
@@ -1051,7 +1148,7 @@ function render() {
     <div class="desc-card ${d.key === p.stratKey ? 'active' : ''}">
       <div class="desc-title">${d.title}</div>
       <div class="desc-text">${d.text}</div>
-      ${d.isNew ? '<span class="new-tag">Nuevo</span>' : ''}
+
     </div>`).join('');
 }
 
@@ -1069,6 +1166,17 @@ function setFetchStatus(msg, type) {
   if (!el) return;
   el.textContent = msg;
   el.className   = `fetch-status fetch-status-${type}`;
+}
+function updateFetchStatusForCrop(crop) {
+  if (!lastFetchInfo) return;
+  const { fechaStr, circ, ok } = lastFetchInfo;
+  if (!ok) {
+    setFetchStatus('⚠ MAGYP no disponible · Precios de referencia · Editables manualmente', 'warn');
+    return;
+  }
+  const base = `✓ FOB Oficiales · MAGYP · ${circ} · Publicado: ${fechaStr}`;
+  const note  = crop === 'girasol' ? ' · Girasol: precio referencial (MATBA)' : '';
+  setFetchStatus(base + note, 'ok');
 }
 
 function updateCropBase(crop, price) {
@@ -1109,16 +1217,12 @@ async function fetchPrices() {
     const fechaStr = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : fechaRaw;
     const circ     = data.circular ? `Circular N° ${data.circular}` : '';
 
-    setFetchStatus(
-      `✓ FOB Oficiales · MAGYP · ${circ} · Publicado: ${fechaStr} · Girasol: precio referencial (MATBA)`,
-      'ok'
-    );
+    lastFetchInfo = { fechaStr, circ, ok: true };
+    updateFetchStatusForCrop(currentCrop);
   } catch (e) {
     // Si el API falla, intentar con la última fecha conocida directamente
-    setFetchStatus(
-      '⚠ MAGYP no disponible en este momento · Usando últimos precios cargados · Editables manualmente',
-      'warn'
-    );
+    lastFetchInfo = { ok: false };
+    updateFetchStatusForCrop(currentCrop);
     // Los CROP_DEFAULTS quedan con los valores de referencia
   }
   // Reaplicar cultivo activo con precios actualizados (o de referencia si falló)
@@ -1128,6 +1232,15 @@ async function fetchPrices() {
 // Init
 render();
 fetchPrices();
+// Set print date
+(function() {
+  const now = new Date();
+  const dd  = String(now.getDate()).padStart(2,'0');
+  const mm  = String(now.getMonth()+1).padStart(2,'0');
+  const yyyy = now.getFullYear();
+  const el = document.getElementById('print-date');
+  if (el) el.textContent = `Impreso: ${dd}/${mm}/${yyyy}`;
+})();
 </script>
 </body>
 </html>
