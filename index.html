@@ -585,6 +585,18 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   </div>
   </div>
 
+  <!-- ── SELECTOR DE POSICIÓN (MES DE CONTRATO MATBA) ── -->
+  <div class="param-card" id="monthSection" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px">
+    <div>
+      <div class="param-label">📅 Posición / Mes de contrato — Forward MATBA</div>
+      <div class="param-hint" id="monthSubtitle">El futuro del mes elegido define el precio base (USD/t)</div>
+    </div>
+    <select id="monthSelect" onchange="onMonthChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
+  </div>
+
+  <!-- ── TIRA DE REFERENCIA (FAS / Dólar) ── -->
+  <div id="marketRef" style="display:none;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-size:11px;color:var(--c-mid,#7f7f7f)"></div>
+
   <!-- ── PARÁMETROS ── -->
   <div class="param-grid" id="paramGrid">
 
@@ -779,25 +791,19 @@ const CROP_DEFAULTS = {
 };
 
 let currentCrop    = 'soja';
-let lastFetchInfo  = null; // {fechaStr, circ}
 let currentStratKey = 'put';
 
 function setCrop(crop) {
   currentCrop = crop;
   const d = CROP_DEFAULTS[crop];
-  document.getElementById('precioBase').value  = d.base;
-  document.getElementById('strike').value      = d.strike;
-  document.getElementById('strikeAlto').value  = d.strikeAlto;
-  document.getElementById('strikeBajo').value  = d.strikeBajo;
-  document.getElementById('prima').value       = d.prima;
-  document.getElementById('primaCall').value   = d.primaCall;
-  document.getElementById('barrera').value     = d.barrera;
-  document.getElementById('costoProd').value   = d.costoProd;
+  // Costo de producción siempre desde el default del cultivo (no viene del mercado)
+  document.getElementById('costoProd').value = d.costoProd;
   document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('crop-' + crop).classList.add('active');
   document.getElementById('topbar-crop').textContent = d.label;
-  updateFetchStatusForCrop(crop);
-  render();
+  // Poblar meses de la curva forward y aplicar mercado (futuro + primas reales o heurística)
+  populateMonths(crop);
+  applyMarket();   // aplica valores y renderiza
 }
 
 // ═══════════════════════════════════════════════
@@ -955,6 +961,7 @@ function setStrat(key) {
   currentStratKey = key;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById('nav-' + key)?.classList.add('active');
+  refreshPrimasFromChain();   // re-deriva primas reales para la nueva estrategia
   render();
 }
 
@@ -986,6 +993,8 @@ function render() {
   if (strat.strikeAltoLabel){ document.getElementById('strikeAltoLabel').textContent = strat.strikeAltoLabel; document.getElementById('strikeAltoHint').textContent = strat.strikeAltoHint; }
   if (strat.primaLabel)     { document.getElementById('primaLabel').textContent = strat.primaLabel; document.getElementById('primaHint').textContent = strat.primaHint; }
   else                      { document.getElementById('primaLabel').textContent = 'Prima de la Opción'; document.getElementById('primaHint').textContent = 'USD/t · Prima pagada'; }
+  // Si hay prima real de la cadena de opciones, la nota gana al hint genérico
+  if (primaSourceNote && strat.needsPrima) document.getElementById('primaHint').textContent = `USD/t · ${primaSourceNote}`;
 
   // Dynamic label — precio base (cambia según estrategia)
   const defaultBaseLabel = 'Precio Base / Futuro Actual';
@@ -1155,84 +1164,257 @@ function render() {
 // ═══════════════════════════════════════════════
 //  EVENTS & INIT
 // ═══════════════════════════════════════════════
-['precioBase','strike','strikeAlto','strikeBajo','prima','primaCall','barrera','costoProd']
+// Inputs que solo recalculan
+['precioBase','prima','primaCall','barrera','costoProd']
   .forEach(id => document.getElementById(id).addEventListener('input', render));
+// Strikes: al editarlos, re-derivan la prima desde la cadena real (si hay) y renderizan
+['strike','strikeAlto','strikeBajo']
+  .forEach(id => document.getElementById(id).addEventListener('input', () => { refreshPrimasFromChain(); render(); }));
 
 // ═══════════════════════════════════════════════
-//  FETCH DE PRECIOS DESDE MAGYP
+//  DATOS DE MERCADO EN VIVO — MATba Rofex · DINEM
+//  Forward + Opciones (primas reales) · FAS · Dólar
 // ═══════════════════════════════════════════════
+const SHEETS_URL = '/api/sheets';
+const FAS_URL    = '/api/fas';
+const FOB_URL    = '/api/fob';
+const TC_URL     = '/api/tc';
+const CACHE_KEY  = 'simcob_live_v1';
+
+let LIVE = { chains:{}, tc:null, fas:{}, fobSpot:{}, fecha:null, loaded:false, fromCache:false, cacheTs:0 };
+let currentMonthKey = null;
+let primaSourceNote = '';   // nota "prima real MATba" para mostrar en el hint (persistente entre renders)
+
+const round1 = v => Math.round(v * 10) / 10;
+
 function setFetchStatus(msg, type) {
   const el = document.getElementById('fetchStatus');
   if (!el) return;
   el.textContent = msg;
   el.className   = `fetch-status fetch-status-${type}`;
 }
-function updateFetchStatusForCrop(crop) {
-  if (!lastFetchInfo) return;
-  const { fechaStr, circ, ok } = lastFetchInfo;
-  if (!ok) {
-    setFetchStatus('⚠ MAGYP no disponible · Precios de referencia · Editables manualmente', 'warn');
-    return;
-  }
-  const base = `✓ FOB Oficiales · MAGYP · ${circ} · Publicado: ${fechaStr}`;
-  const note  = crop === 'girasol' ? ' · Girasol: precio referencial (MATBA)' : '';
-  setFetchStatus(base + note, 'ok');
+
+// ── Caché local (resiliencia si las fuentes fallan) ──
+function saveCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch (e) {}
+}
+function loadCache() {
+  try { const o = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); return o && o.data ? o : null; }
+  catch (e) { return null; }
+}
+function cacheAge(ts) {
+  const min = Math.round((Date.now() - ts) / 60000);
+  if (min < 60) return `hace ${min} min`;
+  const h = Math.round(min / 60);
+  return h < 48 ? `hace ${h} h` : `hace ${Math.round(h / 24)} d`;
 }
 
-function updateCropBase(crop, price) {
-  const d = CROP_DEFAULTS[crop];
-  const pRound    = Math.round(price);
-  const spread5   = Math.round(pRound * 0.05);
-  const spread7   = Math.round(pRound * 0.07);
-  const spread10  = Math.round(pRound * 0.10);
-  const spread93  = Math.round(pRound * 0.93);
-  d.base      = pRound;
-  d.strike    = pRound;
-  d.strikeAlto = pRound + spread5;
-  d.strikeBajo = spread93;
-  d.barrera    = pRound + spread10;
-  d.prima      = Math.max(5, Math.round(pRound * 0.04));
-  d.primaCall  = Math.max(3, Math.round(pRound * 0.025));
-}
+// ── Orquestador de fuentes ──
+async function fetchLiveAll() {
+  setFetchStatus('⟳ Conectando con MATba Rofex / DINEM...', 'loading');
+  const get = url => fetch(url, { signal: AbortSignal.timeout(12000) }).then(r => r.json());
+  const [agro, fin, fas, fob] = await Promise.allSettled([
+    get(`${SHEETS_URL}?tab=agropecuarios`),
+    get(`${SHEETS_URL}?tab=financiero`),
+    get(`${FAS_URL}`),
+    get(`${FOB_URL}`),
+  ]);
 
-async function fetchPrices() {
-  setFetchStatus('⟳ Conectando con MAGYP...', 'loading');
-  try {
-    const res = await fetch('/api/fob', { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-
-    // Actualizar precios desde FOB oficiales (siempre trae el último día con datos)
-    if (data.spot) {
-      const { soja, maiz, trigo } = data.spot;
-      if (soja  && soja  > 0) updateCropBase('soja',  soja);
-      if (maiz  && maiz  > 0) updateCropBase('maiz',  maiz);
-      if (trigo && trigo > 0) updateCropBase('trigo', trigo);
-      // Girasol: MAGYP no publica FOB → precio referencial
-    }
-
-    // Formatear fecha de la última circular disponible
-    const fechaRaw = data.fecha || '';
-    const parts    = fechaRaw.split('-');
-    const fechaStr = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : fechaRaw;
-    const circ     = data.circular ? `Circular N° ${data.circular}` : '';
-
-    lastFetchInfo = { fechaStr, circ, ok: true };
-    updateFetchStatusForCrop(currentCrop);
-  } catch (e) {
-    // Si el API falla, intentar con la última fecha conocida directamente
-    lastFetchInfo = { ok: false };
-    updateFetchStatusForCrop(currentCrop);
-    // Los CROP_DEFAULTS quedan con los valores de referencia
+  if (agro.status === 'fulfilled' && agro.value && agro.value.chains) {
+    LIVE.chains = agro.value.chains;
+    LIVE.fecha  = agro.value.actualizado || null;
+    LIVE.loaded = true; LIVE.fromCache = false;
   }
-  // Reaplicar cultivo activo con precios actualizados (o de referencia si falló)
+  if (fin.status === 'fulfilled' && Array.isArray(fin.value?.dolares)) LIVE.tc = pickTC(fin.value.dolares);
+  if (fas.status === 'fulfilled' && fas.value?.fas)  LIVE.fas     = fas.value.fas;
+  if (fob.status === 'fulfilled' && fob.value?.spot) LIVE.fobSpot = fob.value.spot;
+
+  if (LIVE.loaded) {
+    saveCache({ chains: LIVE.chains, tc: LIVE.tc, fas: LIVE.fas, fobSpot: LIVE.fobSpot, fecha: LIVE.fecha });
+  } else {
+    const c = loadCache();
+    if (c) { LIVE = { ...LIVE, ...c.data, loaded: true, fromCache: true, cacheTs: c.ts }; }
+  }
+  // Re-aplicar el cultivo activo ya con los datos cargados
   setCrop(currentCrop);
 }
 
-// Init
+// Dólar de referencia: contrato DLR más cercano con precio (para pesificar)
+function pickTC(dolares) {
+  const now = new Date(), t = now.getFullYear() * 12 + (now.getMonth() + 1);
+  const withMonth = dolares.filter(d => d.precio > 0 && d.mes && d.año)
+                           .sort((a, b) => (a.año * 12 + a.mes) - (b.año * 12 + b.mes));
+  const fut = withMonth.find(d => d.año * 12 + d.mes >= t) || withMonth[withMonth.length - 1];
+  return fut ? fut.precio : (dolares.find(d => d.precio > 0)?.precio || null);
+}
+
+// ── Cadena de opciones / futuros del cultivo ──
+function monthsFor(crop) { return (LIVE.chains && LIVE.chains[crop]) || []; }
+function currentMonthEntry() { return monthsFor(currentCrop).find(m => m.key === currentMonthKey) || null; }
+
+function populateMonths(crop) {
+  const sel = document.getElementById('monthSelect');
+  const section = document.getElementById('monthSection');
+  const months = monthsFor(crop);
+  if (!months.length) {
+    sel.innerHTML = '<option>—</option>';
+    section.style.opacity = '0.55';
+    document.getElementById('monthSubtitle').textContent = crop === 'girasol'
+      ? 'Girasol: sin forward MATba — precio referencial editable a mano'
+      : 'Sin futuros disponibles — usando valores de referencia';
+    currentMonthKey = null;
+    return;
+  }
+  section.style.opacity = '1';
+  document.getElementById('monthSubtitle').textContent = 'El futuro del mes elegido define el precio base (USD/t)';
+  const keep = months.find(m => m.key === currentMonthKey);
+  currentMonthKey = keep ? keep.key : months[0].key;
+  sel.innerHTML = months.map(m =>
+    `<option value="${m.key}" ${m.key === currentMonthKey ? 'selected' : ''}>${m.label} · US$${m.future.toFixed(1)}</option>`
+  ).join('');
+}
+
+function onMonthChange() {
+  currentMonthKey = document.getElementById('monthSelect').value;
+  applyMarket();
+}
+
+// ── Helpers de strikes / primas reales ──
+function allStrikes(m) { return [...new Set([...m.puts, ...m.calls].map(o => o.strike))].sort((a, b) => a - b); }
+function nearestStrike(strikes, target) {
+  if (!strikes.length) return null;
+  return strikes.reduce((b, s) => Math.abs(s - target) < Math.abs(b - target) ? s : b);
+}
+function firstStrikeAbove(list, target) {
+  const s = list.map(o => o.strike).sort((a, b) => a - b).find(x => x >= target);
+  return s ?? null;
+}
+function lastStrikeBelow(list, target) {
+  const arr = list.map(o => o.strike).sort((a, b) => a - b).filter(x => x <= target);
+  return arr.length ? arr[arr.length - 1] : null;
+}
+function nearestPrima(list, target) {
+  if (!list || !list.length) return null;
+  const e = list.reduce((b, o) => Math.abs(o.strike - target) < Math.abs(b.strike - target) ? o : b);
+  return { strike: e.strike, prima: e.prima };
+}
+
+// Setea base + strikes + primas reales (o heurística si no hay cadena)
+function applyMarket() {
+  const m = currentMonthEntry();
+  if (!m) {
+    let base = CROP_DEFAULTS[currentCrop].base;
+    if (LIVE.fobSpot && LIVE.fobSpot[currentCrop] > 0) base = LIVE.fobSpot[currentCrop];
+    applyHeuristic(base);
+    refreshPrimasFromChain();
+    render(); updateMarketRef(); updateFetchStatusForCrop(currentCrop);
+    return;
+  }
+  const base = m.future;
+  document.getElementById('precioBase').value = round1(base);
+  document.getElementById('strike').value     = nearestStrike(allStrikes(m), base) ?? round1(base);
+  document.getElementById('strikeAlto').value = firstStrikeAbove(m.calls, base) ?? round1(base * 1.05);
+  document.getElementById('strikeBajo').value = lastStrikeBelow(m.puts, base)   ?? round1(base * 0.93);
+  document.getElementById('barrera').value    = round1(base * 1.10);
+  refreshPrimasFromChain();
+  render(); updateMarketRef(); updateFetchStatusForCrop(currentCrop);
+}
+
+function applyHeuristic(base) {
+  const b = Math.round(base);
+  document.getElementById('precioBase').value = b;
+  document.getElementById('strike').value     = b;
+  document.getElementById('strikeAlto').value = b + Math.round(b * 0.05);
+  document.getElementById('strikeBajo').value = Math.round(b * 0.93);
+  document.getElementById('barrera').value    = b + Math.round(b * 0.10);
+  document.getElementById('prima').value      = Math.max(5, Math.round(b * 0.04));
+  document.getElementById('primaCall').value  = Math.max(3, Math.round(b * 0.025));
+}
+
+// Recalcula prima(s) desde la cadena real según la estrategia activa
+function refreshPrimasFromChain() {
+  const m = currentMonthEntry();
+  primaSourceNote = '';                  // limpiar nota (se re-evalúa abajo)
+  if (!m) return; // sin cadena → se respetan las primas heurísticas/manuales
+  const strike     = parseFloat(document.getElementById('strike').value);
+  const strikeAlto = parseFloat(document.getElementById('strikeAlto').value);
+  const strikeBajo = parseFloat(document.getElementById('strikeBajo').value);
+  // Primas con 2 decimales (precisión de valor teórico MATba; ej. 2.54, 0.01)
+  const setP = (id, v) => { if (v != null && Number.isFinite(v)) document.getElementById(id).value = Math.round(Math.max(0.01, v) * 100) / 100; };
+  let note = '';
+
+  switch (currentStratKey) {
+    case 'put': {
+      const p = nearestPrima(m.puts, strike);
+      if (p) { setP('prima', p.prima); note = `prima real PUT ${p.strike} · MATba ✓`; }
+      break;
+    }
+    case 'call_lanzado':
+    case 'sintetico': {
+      const c = nearestPrima(m.calls, strike);
+      if (c) { setP('prima', c.prima); note = `prima real CALL ${c.strike} · MATba ✓`; }
+      break;
+    }
+    case 'collar': {
+      const p = nearestPrima(m.puts, strike), c = nearestPrima(m.calls, strikeAlto);
+      if (p) setP('prima', p.prima);
+      if (c) setP('primaCall', c.prima);
+      if (p && c) note = `PUT ${p.strike} / CALL ${c.strike} · MATba ✓`;
+      break;
+    }
+    case 'bull_spread': {
+      const pa = nearestPrima(m.puts, strikeAlto), pb = nearestPrima(m.puts, strikeBajo);
+      if (pa && pb) { setP('prima', Math.max(0.01, pa.prima - pb.prima)); note = `prima neta real PUT ${pa.strike}/${pb.strike} · MATba ✓`; }
+      break;
+    }
+  }
+  primaSourceNote = note;                // render() la mostrará en el hint (persistente)
+}
+
+// Tira de referencia: Forward / FAS / Dólar
+function chip(label, val, color) {
+  return `<span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e7e2d9;border-left:3px solid ${color};border-radius:7px;padding:5px 10px">`
+       + `<b style="color:#3a3a3a">${label}:</b> ${val}</span>`;
+}
+function updateMarketRef() {
+  const el = document.getElementById('marketRef');
+  if (!el) return;
+  const chips = [];
+  const m = currentMonthEntry();
+  if (m) chips.push(chip('Forward MATba', `US$${m.future.toFixed(1)}/t · ${m.label}`, '#32E8A9'));
+  const fasV = LIVE.fas ? LIVE.fas[currentCrop] : null;
+  if (fasV > 0) {
+    chips.push(chip('FAS al productor', `$${Math.round(fasV).toLocaleString('es-AR')}/t`, '#6C868C'));
+    if (LIVE.tc > 0) chips.push(chip('FAS en USD', `US$${(fasV / LIVE.tc).toFixed(1)}/t`, '#6C868C'));
+  }
+  if (LIVE.tc > 0) chips.push(chip('Dólar futuro', `$${LIVE.tc.toFixed(1)}`, '#F0A83D'));
+  el.innerHTML = chips.join('');
+  el.style.display = chips.length ? 'flex' : 'none';
+}
+
+function updateFetchStatusForCrop(crop) {
+  const m = currentMonthEntry();
+  if (LIVE.loaded && m) {
+    const src   = LIVE.fromCache ? `caché · ${cacheAge(LIVE.cacheTs)}` : 'en vivo';
+    const fecha = LIVE.fecha ? ` · ${LIVE.fecha}` : '';
+    setFetchStatus(`✓ Forward + Opciones MATba (${src})${fecha} · primas reales donde hay cotización`, LIVE.fromCache ? 'warn' : 'ok');
+  } else if (crop === 'girasol') {
+    setFetchStatus('⚠ Girasol: sin forward MATba · Precio referencial editable a mano', 'warn');
+  } else if (LIVE.loaded) {
+    setFetchStatus('⚠ Sin futuros para este cultivo · valores de referencia', 'warn');
+  } else {
+    setFetchStatus('⚠ Mercado no disponible · Precios de referencia editables', 'warn');
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
 render();
-fetchPrices();
-// Set print date
+setCrop(currentCrop);   // estado inicial (heurística hasta que lleguen los datos)
+fetchLiveAll();         // trae datos vivos y re-aplica setCrop
+
+// Fecha de impresión
 (function() {
   const now = new Date();
   const dd  = String(now.getDate()).padStart(2,'0');
