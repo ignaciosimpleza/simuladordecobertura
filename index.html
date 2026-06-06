@@ -594,6 +594,15 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
     <select id="monthSelect" onchange="onMonthChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
   </div>
 
+  <!-- ── SELECTOR DE ZONA (COSTO DE PRODUCCIÓN · AGBI) ── -->
+  <div class="param-card" id="zoneSection" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px">
+    <div>
+      <div class="param-label">🌎 Zona — Costo de producción (AGBI)</div>
+      <div class="param-hint" id="zoneSubtitle">Define el costo de producción (USD/t) — siempre editable</div>
+    </div>
+    <select id="zoneSelect" onchange="onZoneChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
+  </div>
+
   <!-- ── TIRA DE REFERENCIA (FAS / Dólar) ── -->
   <div id="marketRef" style="display:none;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-size:11px;color:var(--c-mid,#7f7f7f)"></div>
 
@@ -803,7 +812,10 @@ function setCrop(crop) {
   document.getElementById('topbar-crop').textContent = d.label;
   // Poblar meses de la curva forward y aplicar mercado (futuro + primas reales o heurística)
   populateMonths(crop);
-  applyMarket();   // aplica valores y renderiza
+  applyMarket();   // aplica base/strikes/primas y renderiza
+  // Poblar zonas (AGBI) y aplicar el costo de producción de la zona elegida
+  populateZones(crop);
+  applyCosto();    // override de costoProd con AGBI si hay (editable)
 }
 
 // ═══════════════════════════════════════════════
@@ -1179,10 +1191,14 @@ const SHEETS_URL = '/api/sheets';
 const FAS_URL    = '/api/fas';
 const FOB_URL    = '/api/fob';
 const TC_URL     = '/api/tc';
+const COSTOS_URL = '/api/costos';
 const CACHE_KEY  = 'simcob_live_v1';
 
-let LIVE = { chains:{}, tc:null, fas:{}, fobSpot:{}, fecha:null, loaded:false, fromCache:false, cacheTs:0 };
+let LIVE = { chains:{}, tc:null, fas:{}, fobSpot:{}, fecha:null,
+             costos:{}, regiones:[], campana:null,
+             loaded:false, fromCache:false, cacheTs:0 };
 let currentMonthKey = null;
+let currentZone = null;
 let primaSourceNote = '';   // nota "prima real MATba" para mostrar en el hint (persistente entre renders)
 
 const round1 = v => Math.round(v * 10) / 10;
@@ -1213,11 +1229,12 @@ function cacheAge(ts) {
 async function fetchLiveAll() {
   setFetchStatus('⟳ Conectando con MATba Rofex / DINEM...', 'loading');
   const get = url => fetch(url, { signal: AbortSignal.timeout(12000) }).then(r => r.json());
-  const [agro, fin, fas, fob] = await Promise.allSettled([
+  const [agro, fin, fas, fob, cost] = await Promise.allSettled([
     get(`${SHEETS_URL}?tab=agropecuarios`),
     get(`${SHEETS_URL}?tab=financiero`),
     get(`${FAS_URL}`),
     get(`${FOB_URL}`),
+    get(`${COSTOS_URL}`),
   ]);
 
   if (agro.status === 'fulfilled' && agro.value && agro.value.chains) {
@@ -1228,10 +1245,17 @@ async function fetchLiveAll() {
   if (fin.status === 'fulfilled' && Array.isArray(fin.value?.dolares)) LIVE.tc = pickTC(fin.value.dolares);
   if (fas.status === 'fulfilled' && fas.value?.fas)  LIVE.fas     = fas.value.fas;
   if (fob.status === 'fulfilled' && fob.value?.spot) LIVE.fobSpot = fob.value.spot;
+  if (cost.status === 'fulfilled' && cost.value?.costos) {
+    LIVE.costos   = cost.value.costos;
+    LIVE.regiones = cost.value.regiones || [];
+    LIVE.campana  = cost.value.campana || null;
+  }
 
-  if (LIVE.loaded) {
-    saveCache({ chains: LIVE.chains, tc: LIVE.tc, fas: LIVE.fas, fobSpot: LIVE.fobSpot, fecha: LIVE.fecha });
-  } else {
+  if (LIVE.loaded || LIVE.regiones.length) {
+    saveCache({ chains: LIVE.chains, tc: LIVE.tc, fas: LIVE.fas, fobSpot: LIVE.fobSpot, fecha: LIVE.fecha,
+                costos: LIVE.costos, regiones: LIVE.regiones, campana: LIVE.campana });
+  }
+  if (!LIVE.loaded) {
     const c = loadCache();
     if (c) { LIVE = { ...LIVE, ...c.data, loaded: true, fromCache: true, cacheTs: c.ts }; }
   }
@@ -1277,6 +1301,51 @@ function populateMonths(crop) {
 function onMonthChange() {
   currentMonthKey = document.getElementById('monthSelect').value;
   applyMarket();
+}
+
+// ── Zona / costo de producción (AGBI) ──
+function costoFor(crop, zone) {
+  return (LIVE.costos && LIVE.costos[crop] && LIVE.costos[crop][zone]) || null;
+}
+function cropHasCostos(crop) {
+  return !!(LIVE.costos && LIVE.costos[crop] && Object.keys(LIVE.costos[crop]).length);
+}
+function populateZones(crop) {
+  const sel = document.getElementById('zoneSelect');
+  const section = document.getElementById('zoneSection');
+  const sub = document.getElementById('zoneSubtitle');
+  if (!LIVE.regiones.length || !cropHasCostos(crop)) {
+    sel.innerHTML = '<option>—</option>';
+    section.style.opacity = '0.55';
+    sub.textContent = !LIVE.regiones.length
+      ? 'Costos AGBI no disponibles — costo de producción editable a mano'
+      : 'AGBI no publica este cultivo (ej. Trigo) — costo de producción editable a mano';
+    currentZone = null;
+    return;
+  }
+  section.style.opacity = '1';
+  const camp = LIVE.campana ? ` · ${LIVE.campana}` : '';
+  sub.textContent = `Precio de equilibrio AGBI${camp} (USD/t) — siempre editable`;
+  const keep = LIVE.regiones.includes(currentZone) ? currentZone : LIVE.regiones[0];
+  currentZone = keep;
+  sel.innerHTML = LIVE.regiones.map(z => {
+    const c = costoFor(crop, z);
+    const tag = c && c.costoProd != null ? ` · US$${c.costoProd}/t` : '';
+    return `<option value="${z}" ${z === currentZone ? 'selected' : ''}>${z}${tag}</option>`;
+  }).join('');
+}
+function onZoneChange() {
+  currentZone = document.getElementById('zoneSelect').value;
+  applyCosto();
+}
+// Aplica el costo de producción de AGBI (si hay) al input — editable
+function applyCosto() {
+  const c = costoFor(currentCrop, currentZone);
+  if (c && c.costoProd != null) {
+    document.getElementById('costoProd').value = c.costoProd;
+  }
+  // si no hay dato AGBI, se respeta el valor actual (default del cultivo, editable)
+  render(); updateMarketRef();
 }
 
 // ── Helpers de strikes / primas reales ──
@@ -1388,6 +1457,11 @@ function updateMarketRef() {
     if (LIVE.tc > 0) chips.push(chip('FAS en USD', `US$${(fasV / LIVE.tc).toFixed(1)}/t`, '#6C868C'));
   }
   if (LIVE.tc > 0) chips.push(chip('Dólar futuro', `$${LIVE.tc.toFixed(1)}`, '#F0A83D'));
+  const c = costoFor(currentCrop, currentZone);
+  if (c && c.costoProd != null) {
+    const camp = LIVE.campana ? ` · ${LIVE.campana}` : '';
+    chips.push(chip('Costo AGBI', `US$${c.costoProd}/t · ${currentZone}${camp}`, '#CD6155'));
+  }
   el.innerHTML = chips.join('');
   el.style.display = chips.length ? 'flex' : 'none';
 }
