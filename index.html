@@ -645,7 +645,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <div class="param-hint" id="basePrecioHint">USD/t · Precio de referencia del mercado de futuros</div>
       </div>
       <a class="param-source src-oficial" id="basePrecioSource" target="_blank" rel="noopener"
-         href="https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/fob_oficiales/">📡 FOB oficial · MAGYP</a>
+         href="https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx">📡 FOB oficial · MAGYP (DINEM)</a>
     </div>
 
     <div class="param-card accent" id="strikeCard">
@@ -843,12 +843,21 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
           <tr>
             <td>Precio Base — Soja, Maíz, Trigo</td>
             <td><span class="src-type t-of">📡 Oficial</span></td>
-            <td>Precio FOB oficial publicado por el MAGYP (Subsecretaría de Mercados Agropecuarios, Ley 21.453), tomado del web service oficial a través de <code>/api/fob</code>. Se usa el último día hábil con datos publicados. Fuente: <a href="https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/fob_oficiales/" target="_blank" rel="noopener">FOB Oficiales — MAGYP</a>. Si el servicio no responde, queda un valor de referencia editable (lo indica el aviso de estado).</td>
+            <td>
+              Precio <strong>FOB oficial</strong> de la Dirección de Información y Estudios de Mercado (DINEM) del MAGYP, según Ley 21.453. La app lo toma del web service oficial vía <code>/api/fob</code>, usando el último día hábil con datos publicados.<br>
+              <strong>Verificá el número exacto en:</strong>
+              <ul style="margin:4px 0 4px 16px; padding:0;">
+                <li><span id="fobVerify"><a href="https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx" target="_blank" rel="noopener">consulta de Precios FOB en DINEM →</a></span> &nbsp;<em>(es el dato puntual que la app usó)</em></li>
+                <li>Página de consulta: <a href="https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx" target="_blank" rel="noopener">Precios FOB Oficiales — DINEM/MAGYP</a></li>
+                <li>Valores diarios descargables: <a href="https://datos.gob.ar/dataset/sspm-precios-fob-oficiales/archivo/sspm_358.1" target="_blank" rel="noopener">Dataset 358.1 — datos.gob.ar</a></li>
+              </ul>
+              Posiciones NCM para buscar cada producto: <strong>Soja</strong> 12019000190C · <strong>Maíz</strong> 10059010120A · <strong>Trigo</strong> 10011900110H. Si el servicio no responde, queda un valor de referencia editable (lo indica el aviso de estado).
+            </td>
           </tr>
           <tr>
             <td>Precio Base — Girasol</td>
             <td><span class="src-type t-in">✍️ Insumo</span></td>
-            <td>El MAGYP no publica FOB oficial de girasol grano en esta fuente, por lo que el valor mostrado es <strong>referencial y debe ingresarse manualmente</strong> (referencia: <a href="https://www.matba-rofex.com.ar/" target="_blank" rel="noopener">MATBA-ROFEX</a>).</td>
+            <td>El MAGYP no publica FOB oficial de girasol grano en esta fuente, por lo que el valor mostrado es <strong>referencial y debe ingresarse manualmente</strong> (referencia de cotizaciones: <a href="https://matbarofex.com.ar/productos/agropecuarios" target="_blank" rel="noopener">Matba-Rofex — Agropecuarios</a>).</td>
           </tr>
           <tr>
             <td>Strike — Precio de Ejercicio</td>
@@ -868,12 +877,12 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
           <tr>
             <td>Prima PUT / Prima CALL</td>
             <td><span class="src-type t-in">✍️ Insumo</span></td>
-            <td>El valor inicial es una <strong>auto-estimación</strong> (≈ 4% y ≈ 2,5% del Precio Base), no un dato de mercado. La prima real es la cotización de la opción en el mercado de opciones agrícolas. Referencia: <a href="https://www.matba-rofex.com.ar/" target="_blank" rel="noopener">MATBA-ROFEX</a>.</td>
+            <td>El valor inicial es una <strong>auto-estimación</strong> (≈ 4% y ≈ 2,5% del Precio Base), <strong>no es un dato de mercado</strong>. La prima real es la cotización de la opción (PUT/CALL) en el mercado de opciones agrícolas. Verificá la prima del strike y vencimiento que te interese en: <a href="https://matbarofex.com.ar/producto/futuros-y-opciones-sobre-soja" target="_blank" rel="noopener">Matba-Rofex — Futuros y Opciones (Soja</a> / <a href="https://matbarofex.com.ar/producto/futuros-y-opciones-sobre-maiz" target="_blank" rel="noopener">Maíz</a>).</td>
           </tr>
           <tr>
             <td>Costo de Producción</td>
             <td><span class="src-type t-in">✍️ Insumo</span></td>
-            <td>Valor de referencia editable: <strong>ingresá tu costo real</strong>. Referencias públicas: <a href="https://www.margenes.com/" target="_blank" rel="noopener">Revista Márgenes Agropecuarios</a>, <a href="https://www.argentina.gob.ar/inta" target="_blank" rel="noopener">INTA</a> o las bolsas de cereales.</td>
+            <td>No hay una fuente única oficial: el costo depende de cada campo. Es un <strong>dato de insumo: ingresá tu costo real</strong>. Como referencia podés consultar tu propio planteo técnico, los márgenes que publican las bolsas de cereales o la revista Márgenes Agropecuarios. El valor que viene cargado es solo un número de arranque editable, no un dato verificado.</td>
           </tr>
           <tr>
             <td>PVF, KPIs, márgenes y escenarios</td>
@@ -929,29 +938,74 @@ function setCrop(crop) {
   render();
 }
 
-// Ajusta la etiqueta de procedencia del Precio Base según cultivo / estado del FOB
-const MAGYP_FOB_URL = 'https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/fob_oficiales/';
+// Fuentes oficiales verificables del Precio Base FOB
+const FOB_WS_BASE  = 'https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/ws/ssma/precios_fob.php?Fecha=';
+const DINEM_URL    = 'https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx';
+const DATOSGOB_URL = 'https://datos.gob.ar/dataset/sspm-precios-fob-oficiales/archivo/sspm_358.1';
+// Posiciones NCM oficiales que usa /api/fob (Ley 21.453) — sirven para verificar el dato
+const NCM_INFO = {
+  soja:  { ncm: '12019000190C', desc: 'Habas de soja a granel' },
+  maiz:  { ncm: '10059010120A', desc: 'Maíz en grano a granel' },
+  trigo: { ncm: '10011900110H', desc: 'Trigo pan a granel' },
+};
+
+// Link al web service oficial para la fecha que la app realmente consultó:
+// al abrirlo se ve el JSON con el mismo número (imposible que sea inventado).
+function fobWsUrl() {
+  return (lastFetchInfo && lastFetchInfo.fechaStr)
+    ? FOB_WS_BASE + encodeURIComponent(lastFetchInfo.fechaStr)
+    : DINEM_URL;
+}
+
+// Inyecta en el panel "Procedencia" el link exacto al dato del día
+function updateFobVerifyLink() {
+  const el = document.getElementById('fobVerify');
+  if (!el) return;
+  const fi = lastFetchInfo;
+  if (fi && fi.ok) {
+    const fb = fi.source === 'fallback_datosgob';
+    el.innerHTML = fb
+      ? `<a href="${DATOSGOB_URL}" target="_blank" rel="noopener">valores diarios en datos.gob.ar →</a> (fecha del dato: ${fi.fechaStr})`
+      : `<a href="${fobWsUrl()}" target="_blank" rel="noopener">respuesta oficial del web service para el ${fi.fechaStr} →</a>`;
+  } else {
+    el.innerHTML = `<a href="${DINEM_URL}" target="_blank" rel="noopener">consulta de Precios FOB en DINEM →</a> (el servicio automático no respondió)`;
+  }
+}
+
 function setBaseSource(crop) {
   const el = document.getElementById('basePrecioSource');
   if (!el) return;
-  // Girasol: MAGYP no publica FOB oficial en esta fuente → dato de insumo
+  el.target = '_blank'; el.rel = 'noopener';
+
+  // Girasol: MAGYP no publica FOB oficial de girasol grano → dato de insumo
   if (crop === 'girasol') {
-    el.removeAttribute('href');
+    el.href = DINEM_URL;
     el.className = 'param-source src-insumo';
-    el.textContent = '✍️ Insumo · MAGYP no publica FOB de girasol — valor referencial';
+    el.textContent = '✍️ Insumo · MAGYP no publica FOB de girasol — ingresá el valor';
     return;
   }
-  el.href = MAGYP_FOB_URL;
-  if (lastFetchInfo && lastFetchInfo.ok === false) {
+
+  const fi = lastFetchInfo;
+  if (fi && fi.ok === false) {
+    el.href = DINEM_URL;
     el.className = 'param-source src-insumo';
-    el.textContent = '⚠ FOB MAGYP no disponible · valor de referencia editable';
-  } else if (lastFetchInfo && lastFetchInfo.ok) {
-    el.className = 'param-source src-oficial';
-    el.textContent = `📡 FOB oficial · MAGYP${lastFetchInfo.fechaStr ? ' · ' + lastFetchInfo.fechaStr : ''}`;
-  } else {
-    el.className = 'param-source src-oficial';
-    el.textContent = '📡 FOB oficial · MAGYP';
+    el.textContent = '⚠ FOB MAGYP no disponible · valor editable · ver DINEM →';
+    return;
   }
+  if (fi && fi.ok) {
+    const fb    = fi.source === 'fallback_datosgob';
+    const price = (fi.spot && fi.spot[crop] != null) ? Math.round(fi.spot[crop]) : null;
+    const ncm   = NCM_INFO[crop] ? ' · NCM ' + NCM_INFO[crop].ncm : '';
+    const src   = fb ? 'datos.gob.ar' : 'MAGYP';
+    el.href = fb ? DATOSGOB_URL : fobWsUrl();
+    el.className = 'param-source src-oficial';
+    el.textContent = `📡 FOB oficial ${src}${price != null ? ' · USD ' + price : ''}${ncm} · ${fi.fechaStr} · ver fuente →`;
+    return;
+  }
+  // Antes de la primera respuesta del servicio
+  el.href = DINEM_URL;
+  el.className = 'param-source src-oficial';
+  el.textContent = '📡 FOB oficial · MAGYP (DINEM) — cargando…';
 }
 
 // ═══════════════════════════════════════════════
@@ -1323,6 +1377,7 @@ function setFetchStatus(msg, type) {
 }
 function updateFetchStatusForCrop(crop) {
   setBaseSource(crop);
+  updateFobVerifyLink();
   const upd = document.getElementById('sourcesUpdated');
   if (!lastFetchInfo) return;
   const { fechaStr, circ, ok } = lastFetchInfo;
@@ -1376,7 +1431,7 @@ async function fetchPrices() {
     const fechaStr = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : fechaRaw;
     const circ     = data.circular ? `Circular N° ${data.circular}` : '';
 
-    lastFetchInfo = { fechaStr, circ, ok: true };
+    lastFetchInfo = { fechaStr, circ, ok: true, spot: data.spot || {}, source: data.source || 'MAGYP' };
     updateFetchStatusForCrop(currentCrop);
   } catch (e) {
     // Si el API falla, intentar con la última fecha conocida directamente
