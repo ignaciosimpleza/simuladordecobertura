@@ -304,6 +304,56 @@ body { font-family: var(--font); background: var(--c-bg); color: var(--c-dark); 
 .param-input-wrap { display: flex; flex-direction: column; gap: 4px; }
 .param-hint { font-size: 10px; color: var(--c-sand); font-weight: 300; }
 
+/* ── SOURCE BADGES (procedencia de cada dato) ── */
+.param-source {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 11px; font-size: 9px; font-weight: 600;
+  padding: 3px 8px; border-radius: 20px; letter-spacing: 0.2px;
+  line-height: 1.45; text-decoration: none;
+}
+.src-oficial { background: rgba(50,232,169,0.14); color: #138a64; }
+a.src-oficial:hover { background: rgba(50,232,169,0.26); }
+.src-calc    { background: rgba(108,134,140,0.16); color: #4d6970; }
+.src-insumo  { background: rgba(240,168,61,0.16); color: #b9760f; }
+
+/* ── CALC NOTE ── */
+.calc-note {
+  font-size: 11px; color: var(--c-mid); font-weight: 300;
+  margin: 0 0 16px 2px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+
+/* ── DATA SOURCES PANEL ── */
+.sources-card {
+  background: var(--c-white); border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px;
+}
+.sources-card-header {
+  padding: 14px 18px; font-size: 13px; font-weight: 700; color: var(--c-dark);
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.sources-card-header small { font-weight: 300; color: var(--c-mid); font-size: 11px; }
+.sources-legend {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  padding: 12px 18px; border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.sources-legend .param-source { margin-top: 0; }
+table.sources-table { width: 100%; border-collapse: collapse; }
+table.sources-table th, table.sources-table td {
+  text-align: left; padding: 10px 18px; font-size: 11px;
+  border-bottom: 1px solid rgba(0,0,0,0.05); vertical-align: top;
+}
+table.sources-table th {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--c-mid); font-weight: 700; background: #faf8f5;
+}
+table.sources-table td:first-child { font-weight: 600; color: var(--c-dark); white-space: nowrap; }
+table.sources-table td a { color: #138a64; }
+.src-type { display: inline-block; white-space: nowrap; font-weight: 600; font-size: 10px; }
+.src-type.t-of { color: #138a64; }
+.src-type.t-ca { color: #4d6970; }
+.src-type.t-in { color: #b9760f; }
+
 select, input[type="number"] {
   width: 100%;
   background: #f8f6f3;
@@ -594,6 +644,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="precioBase" value="280" step="1" min="1">
         <div class="param-hint" id="basePrecioHint">USD/t · Precio de referencia del mercado de futuros</div>
       </div>
+      <a class="param-source src-oficial" id="basePrecioSource" target="_blank" rel="noopener"
+         href="https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/fob_oficiales/">📡 FOB oficial · MAGYP</a>
     </div>
 
     <div class="param-card accent" id="strikeCard">
@@ -602,6 +654,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="strike" value="280" step="1" min="1">
         <div class="param-hint" id="strikeHint">USD/t · Precio al que se activa la opción</div>
       </div>
+      <span class="param-source src-calc">🧮 Calculado · = Precio Base</span>
     </div>
 
     <div class="param-card accent" id="strikeAltoCard" style="display:none">
@@ -610,6 +663,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="strikeAlto" value="295" step="1" min="1">
         <div class="param-hint" id="strikeAltoHint">USD/t · Strike de la opción comprada</div>
       </div>
+      <span class="param-source src-calc">🧮 Estimado · ≈ Base +5% — ingresá el strike real</span>
     </div>
 
     <div class="param-card" id="strikeBajoCard" style="display:none">
@@ -618,6 +672,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="strikeBajo" value="260" step="1" min="1">
         <div class="param-hint">USD/t · Piso hasta donde llega la cobertura</div>
       </div>
+      <span class="param-source src-calc">🧮 Estimado · ≈ Base −7% — ingresá el strike real</span>
     </div>
 
     <div class="param-card orange" id="primaCard">
@@ -626,6 +681,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="prima" value="12" step="0.5" min="0">
         <div class="param-hint" id="primaHint">USD/t · Prima pagada</div>
       </div>
+      <span class="param-source src-insumo">✍️ Insumo · prima real de opciones (MATBA/ROFEX) — auto-estimada</span>
     </div>
 
     <div class="param-card orange" id="primaCallCard" style="display:none">
@@ -634,6 +690,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="primaCall" value="8" step="0.5" min="0">
         <div class="param-hint">USD/t · Prima recibida por vender el CALL</div>
       </div>
+      <span class="param-source src-insumo">✍️ Insumo · prima real de opciones (MATBA/ROFEX) — auto-estimada</span>
     </div>
 
     <div class="param-card red" id="barreraCard" style="display:none">
@@ -642,6 +699,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="barrera" value="310" step="1" min="1">
         <div class="param-hint">USD/t · Activa obligación de doble entrega</div>
       </div>
+      <span class="param-source src-calc">🧮 Estimado · ≈ Base +10% — ingresá la barrera real</span>
     </div>
 
     <div class="param-card orange">
@@ -650,6 +708,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="costoProd" value="200" step="1" min="0">
         <div class="param-hint">USD/t · Para calcular margen neto por escenario</div>
       </div>
+      <span class="param-source src-insumo">✍️ Insumo · ingresá tu costo (ref. Márgenes Agropecuarios / INTA / Bolsas)</span>
     </div>
 
   </div>
@@ -661,6 +720,10 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   </div>
 
   <!-- ── KPI STATS ── -->
+  <div class="calc-note">
+    <span class="param-source src-calc" style="margin-top:0">🧮 Calculado</span>
+    Todos los indicadores, el gráfico y la tabla de escenarios de abajo se <strong>calculan</strong> con las fórmulas de cada estrategia a partir de los parámetros de arriba. No son datos de mercado.
+  </div>
   <div class="kpi-grid">
     <div class="kpi-card positive">
       <div class="kpi-label">PVF Mínimo garantizado</div>
@@ -757,6 +820,71 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
 
   <div class="section-divider"></div>
 
+  <!-- ── PROCEDENCIA DE LOS DATOS ── -->
+  <div class="section-header" style="margin-bottom:16px">
+    <h1 style="font-size:16px">Procedencia de los Datos</h1>
+    <p>De dónde sale cada valor de esta pantalla. Nada está fijado de forma arbitraria sin aclararlo.</p>
+  </div>
+  <div class="sources-card">
+    <div class="sources-card-header">
+      🔎 Origen de cada dato <small id="sourcesUpdated"></small>
+    </div>
+    <div class="sources-legend">
+      <span class="param-source src-oficial">📡 Oficial — fuente publicada (con link)</span>
+      <span class="param-source src-calc">🧮 Calculado — derivado por fórmula</span>
+      <span class="param-source src-insumo">✍️ Insumo — lo cargás vos</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="sources-table">
+        <thead>
+          <tr><th>Dato</th><th>Tipo</th><th>Origen / Fórmula</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Precio Base — Soja, Maíz, Trigo</td>
+            <td><span class="src-type t-of">📡 Oficial</span></td>
+            <td>Precio FOB oficial publicado por el MAGYP (Subsecretaría de Mercados Agropecuarios, Ley 21.453), tomado del web service oficial a través de <code>/api/fob</code>. Se usa el último día hábil con datos publicados. Fuente: <a href="https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/fob_oficiales/" target="_blank" rel="noopener">FOB Oficiales — MAGYP</a>. Si el servicio no responde, queda un valor de referencia editable (lo indica el aviso de estado).</td>
+          </tr>
+          <tr>
+            <td>Precio Base — Girasol</td>
+            <td><span class="src-type t-in">✍️ Insumo</span></td>
+            <td>El MAGYP no publica FOB oficial de girasol grano en esta fuente, por lo que el valor mostrado es <strong>referencial y debe ingresarse manualmente</strong> (referencia: <a href="https://www.matba-rofex.com.ar/" target="_blank" rel="noopener">MATBA-ROFEX</a>).</td>
+          </tr>
+          <tr>
+            <td>Strike — Precio de Ejercicio</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Se inicializa igual al Precio Base. Editable: para un análisis real, ingresá el strike de la opción efectivamente operada.</td>
+          </tr>
+          <tr>
+            <td>Strike Alto / Strike Bajo</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Estimación automática a partir del Precio Base (≈ +5% y ≈ −7%). Son valores orientativos: reemplazá por los strikes reales de cada opción.</td>
+          </tr>
+          <tr>
+            <td>Barrera Knock-Out</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Estimación automática a partir del Precio Base (≈ +10%). Reemplazá por la barrera pactada en el contrato.</td>
+          </tr>
+          <tr>
+            <td>Prima PUT / Prima CALL</td>
+            <td><span class="src-type t-in">✍️ Insumo</span></td>
+            <td>El valor inicial es una <strong>auto-estimación</strong> (≈ 4% y ≈ 2,5% del Precio Base), no un dato de mercado. La prima real es la cotización de la opción en el mercado de opciones agrícolas. Referencia: <a href="https://www.matba-rofex.com.ar/" target="_blank" rel="noopener">MATBA-ROFEX</a>.</td>
+          </tr>
+          <tr>
+            <td>Costo de Producción</td>
+            <td><span class="src-type t-in">✍️ Insumo</span></td>
+            <td>Valor de referencia editable: <strong>ingresá tu costo real</strong>. Referencias públicas: <a href="https://www.margenes.com/" target="_blank" rel="noopener">Revista Márgenes Agropecuarios</a>, <a href="https://www.argentina.gob.ar/inta" target="_blank" rel="noopener">INTA</a> o las bolsas de cereales.</td>
+          </tr>
+          <tr>
+            <td>PVF, KPIs, márgenes y escenarios</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Resultado de aplicar la fórmula de la estrategia seleccionada (ver barra lateral) sobre los parámetros anteriores. Los escenarios usan variaciones fijas de ±15%, ±30% y +40% sobre el Precio Base.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- ── DESC CARDS ── -->
   <div class="section-header" style="margin-bottom:16px">
     <h1 style="font-size:16px">Referencia de Estrategias</h1>
@@ -797,7 +925,33 @@ function setCrop(crop) {
   document.getElementById('crop-' + crop).classList.add('active');
   document.getElementById('topbar-crop').textContent = d.label;
   updateFetchStatusForCrop(crop);
+  setBaseSource(crop);
   render();
+}
+
+// Ajusta la etiqueta de procedencia del Precio Base según cultivo / estado del FOB
+const MAGYP_FOB_URL = 'https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/fob_oficiales/';
+function setBaseSource(crop) {
+  const el = document.getElementById('basePrecioSource');
+  if (!el) return;
+  // Girasol: MAGYP no publica FOB oficial en esta fuente → dato de insumo
+  if (crop === 'girasol') {
+    el.removeAttribute('href');
+    el.className = 'param-source src-insumo';
+    el.textContent = '✍️ Insumo · MAGYP no publica FOB de girasol — valor referencial';
+    return;
+  }
+  el.href = MAGYP_FOB_URL;
+  if (lastFetchInfo && lastFetchInfo.ok === false) {
+    el.className = 'param-source src-insumo';
+    el.textContent = '⚠ FOB MAGYP no disponible · valor de referencia editable';
+  } else if (lastFetchInfo && lastFetchInfo.ok) {
+    el.className = 'param-source src-oficial';
+    el.textContent = `📡 FOB oficial · MAGYP${lastFetchInfo.fechaStr ? ' · ' + lastFetchInfo.fechaStr : ''}`;
+  } else {
+    el.className = 'param-source src-oficial';
+    el.textContent = '📡 FOB oficial · MAGYP';
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1168,8 +1322,13 @@ function setFetchStatus(msg, type) {
   el.className   = `fetch-status fetch-status-${type}`;
 }
 function updateFetchStatusForCrop(crop) {
+  setBaseSource(crop);
+  const upd = document.getElementById('sourcesUpdated');
   if (!lastFetchInfo) return;
   const { fechaStr, circ, ok } = lastFetchInfo;
+  if (upd) upd.textContent = ok
+    ? `· FOB MAGYP actualizado al ${fechaStr}${circ ? ' (' + circ + ')' : ''}`
+    : '· FOB MAGYP no disponible — usando valores de referencia editables';
   if (!ok) {
     setFetchStatus('⚠ MAGYP no disponible · Precios de referencia · Editables manualmente', 'warn');
     return;
