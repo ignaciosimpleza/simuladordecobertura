@@ -353,6 +353,8 @@ table.sources-table td a { color: #138a64; }
 .src-type.t-of { color: #138a64; }
 .src-type.t-ca { color: #4d6970; }
 .src-type.t-in { color: #b9760f; }
+[id^="calc-"] { scroll-margin-top: 80px; }
+[id^="calc-"]:target td { background: rgba(50,232,169,0.10); transition: background 0.4s; }
 
 select, input[type="number"] {
   width: 100%;
@@ -749,8 +751,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
 
   <!-- ── KPI STATS ── -->
   <div class="calc-note">
-    <span class="param-source src-calc" style="margin-top:0">🧮 Calculado</span>
-    Todos los indicadores, el gráfico y la tabla de escenarios de abajo se <strong>calculan</strong> con las fórmulas de cada estrategia a partir de los parámetros de arriba. No son datos de mercado.
+    <a class="param-source src-calc" style="margin-top:0" href="#calc-pvf" title="Calculado · ver cómo se calcula">🧮 Calculado</a>
+    Todos los indicadores, el gráfico y la tabla de escenarios de abajo se <strong>calculan</strong> con las fórmulas de cada estrategia a partir de los parámetros de arriba (<a href="#calc-pvf">ver cómo</a>). No son datos de mercado.
   </div>
   <div class="kpi-grid">
     <div class="kpi-card positive">
@@ -903,6 +905,11 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
             <td><span class="src-type t-of">📡 Oficial</span></td>
             <td>FAS teórico oficial de la DINEM (MAGYP). El valor debe coincidir con el de la fuente: <a href="https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx" target="_blank" rel="noopener">DINEM — FAS Teórico →</a>.</td>
           </tr>
+          <tr id="calc-fasusd">
+            <td>FAS en USD <span style="color:#4d6970">🧮</span></td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td><strong>Cómo se calcula:</strong> FAS en USD = <strong>FAS al productor (DINEM, en $/t) ÷ Dólar futuro (A3 · Financiero, $/USD)</strong>. No es un dato publicado: combina dos fuentes. Cada una se verifica en su fila: el FAS en <a href="https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx" target="_blank" rel="noopener">DINEM →</a> y el dólar en la <a href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=2027743157#gid=2027743157" target="_blank" rel="noopener">planilla A3 · Financiero →</a>.</td>
+          </tr>
           <tr>
             <td>FOB oficial (referencia)</td>
             <td><span class="src-type t-of">📡 Oficial</span></td>
@@ -911,17 +918,17 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
           <tr>
             <td>Dólar futuro</td>
             <td><span class="src-type t-of">📡 Mercado</span></td>
-            <td>Dólar futuro (ROFEX) para pesificar el FAS, publicado en la planilla pública <strong>A3 · Financiero</strong>. El valor debe coincidir con el de la fuente: <a href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=2027743157#gid=2027743157" target="_blank" rel="noopener">planilla pública A3 · Financiero →</a>.</td>
+            <td>Dólar futuro (ROFEX) para pesificar el FAS, publicado en la planilla pública <strong>A3 · Financiero</strong>. En el archivo, buscá la <strong>fila del contrato</strong> de dólar (columna «Contrato», ej. <code>DLR/ABR26</code>) y leé la columna <strong>«Ajuste / Valor teórico»</strong>; el chip "Dólar futuro" muestra el nombre exacto de la fila. Fuente: <a href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=2027743157#gid=2027743157" target="_blank" rel="noopener">planilla pública A3 · Financiero →</a>.</td>
           </tr>
           <tr>
             <td>Girasol</td>
             <td><span class="src-type t-in">✍️ Insumo</span></td>
             <td>No hay forward de girasol en Matba Rofex en esta fuente, así que el precio base es <strong>referencial y debe ingresarse manualmente</strong>.</td>
           </tr>
-          <tr>
+          <tr id="calc-pvf">
             <td>PVF, KPIs, márgenes y escenarios</td>
             <td><span class="src-type t-ca">🧮 Calculado</span></td>
-            <td>Resultado de aplicar la fórmula de la estrategia seleccionada sobre los parámetros anteriores. Los escenarios usan variaciones fijas de ±15%, ±30% y +40% sobre el precio base.</td>
+            <td><strong>Cómo se calcula:</strong> se aplica la <strong>fórmula de la estrategia seleccionada</strong> (la ves en la barra lateral izquierda y en "Referencia de Estrategias", abajo) sobre los parámetros de arriba. El <strong>margen neto</strong> = PVF − Costo de Producción. Los <strong>escenarios</strong> usan variaciones fijas de ±15%, ±30% y +40% sobre el precio base.</td>
           </tr>
         </tbody>
       </table>
@@ -1347,7 +1354,7 @@ const TC_URL     = '/api/tc';
 const COSTOS_URL = '/api/costos';
 const CACHE_KEY  = 'simcob_live_v1';
 
-let LIVE = { chains:{}, tc:null, fas:{}, fobSpot:{}, fecha:null,
+let LIVE = { chains:{}, tc:null, tcContrato:null, fas:{}, fobSpot:{}, fecha:null,
              costos:{}, regiones:[], campana:null,
              agroUrl:null, costoUrl:null,
              loaded:false, fromCache:false, cacheTs:0 };
@@ -1498,7 +1505,11 @@ async function fetchLiveAll() {
     LIVE.agroUrl = agro.value.fuenteUrl || null;
     LIVE.loaded = true; LIVE.fromCache = false;
   }
-  if (fin.status === 'fulfilled' && Array.isArray(fin.value?.dolares)) LIVE.tc = pickTC(fin.value.dolares);
+  if (fin.status === 'fulfilled' && Array.isArray(fin.value?.dolares)) {
+    const tcRec = pickTC(fin.value.dolares);
+    LIVE.tc = tcRec?.precio ?? null;
+    LIVE.tcContrato = tcRec?.contrato ?? null;
+  }
   if (fas.status === 'fulfilled' && fas.value?.fas)  LIVE.fas     = fas.value.fas;
   if (fob.status === 'fulfilled' && fob.value?.spot) LIVE.fobSpot = fob.value.spot;
   if (cost.status === 'fulfilled' && cost.value?.costos) {
@@ -1509,7 +1520,7 @@ async function fetchLiveAll() {
   }
 
   if (LIVE.loaded || LIVE.regiones.length) {
-    saveCache({ chains: LIVE.chains, tc: LIVE.tc, fas: LIVE.fas, fobSpot: LIVE.fobSpot, fecha: LIVE.fecha,
+    saveCache({ chains: LIVE.chains, tc: LIVE.tc, tcContrato: LIVE.tcContrato, fas: LIVE.fas, fobSpot: LIVE.fobSpot, fecha: LIVE.fecha,
                 costos: LIVE.costos, regiones: LIVE.regiones, campana: LIVE.campana,
                 agroUrl: LIVE.agroUrl, costoUrl: LIVE.costoUrl });
   }
@@ -1521,13 +1532,14 @@ async function fetchLiveAll() {
   setCrop(currentCrop);
 }
 
-// Dólar de referencia: contrato DLR más cercano con precio (para pesificar)
+// Dólar de referencia: contrato DLR más cercano con precio (para pesificar).
+// Devuelve el registro completo (incluye .contrato = nombre de fila en A3).
 function pickTC(dolares) {
   const now = new Date(), t = now.getFullYear() * 12 + (now.getMonth() + 1);
   const withMonth = dolares.filter(d => d.precio > 0 && d.mes && d.año)
                            .sort((a, b) => (a.año * 12 + a.mes) - (b.año * 12 + b.mes));
   const fut = withMonth.find(d => d.año * 12 + d.mes >= t) || withMonth[withMonth.length - 1];
-  return fut ? fut.precio : (dolares.find(d => d.precio > 0)?.precio || null);
+  return fut || dolares.find(d => d.precio > 0) || null;
 }
 
 // ── Cadena de opciones / futuros del cultivo ──
@@ -1717,11 +1729,17 @@ function updateMarketRef() {
   if (fasV > 0) {
     chips.push(chip('FAS al productor', `$${Math.round(fasV).toLocaleString('es-AR')}/t`, '#6C868C',
       SRC.fasDinem, 'DINEM/MAGYP · FAS Teórico (en pesos)'));
-    if (LIVE.tc > 0) chips.push(chip('FAS en USD 🧮', `US$${(fasV / LIVE.tc).toFixed(1)}/t`, '#6C868C',
-      SRC.fasDinem, 'Calculado: FAS (DINEM, en $) ÷ Dólar futuro (A3 · Financiero)'));
+    if (LIVE.tc > 0) {
+      const calcMark = ` <a href="#calc-fasusd" title="Calculado · cómo se calcula" style="text-decoration:none">🧮</a>`;
+      chips.push(chip(`FAS en USD${calcMark}`, `US$${(fasV / LIVE.tc).toFixed(1)}/t`, '#6C868C',
+        SRC.fasDinem, 'Calculado: FAS (DINEM, en $) ÷ Dólar futuro (A3 · Financiero)'));
+    }
   }
-  if (LIVE.tc > 0) chips.push(chip('Dólar futuro', `$${LIVE.tc.toFixed(1)}`, '#F0A83D',
-    SRC.a3Dolar, 'A3 · Financiero · dólar futuro ROFEX'));
+  if (LIVE.tc > 0) {
+    const filaDlr = LIVE.tcContrato ? `A3 · Financiero · fila ${LIVE.tcContrato} · col. Ajuste/Valor teórico` : 'A3 · Financiero · dólar futuro ROFEX';
+    const valDlr  = LIVE.tcContrato ? `$${LIVE.tc.toFixed(1)} · fila ${LIVE.tcContrato}` : `$${LIVE.tc.toFixed(1)}`;
+    chips.push(chip('Dólar futuro', valDlr, '#F0A83D', SRC.a3Dolar, filaDlr));
+  }
   const c = costoFor(currentCrop, currentZone);
   if (c && c.costoProd != null) {
     const camp = LIVE.campana ? ` · ${LIVE.campana}` : '';
