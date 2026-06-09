@@ -304,6 +304,56 @@ body { font-family: var(--font); background: var(--c-bg); color: var(--c-dark); 
 .param-input-wrap { display: flex; flex-direction: column; gap: 4px; }
 .param-hint { font-size: 10px; color: var(--c-sand); font-weight: 300; }
 
+/* ── SOURCE BADGES (procedencia de cada dato) ── */
+.param-source {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 11px; font-size: 9px; font-weight: 600;
+  padding: 3px 8px; border-radius: 20px; letter-spacing: 0.2px;
+  line-height: 1.45; text-decoration: none;
+}
+.src-oficial { background: rgba(50,232,169,0.14); color: #138a64; }
+a.src-oficial:hover, a.src-insumo:hover { filter: brightness(0.94); }
+.src-calc    { background: rgba(108,134,140,0.16); color: #4d6970; }
+.src-insumo  { background: rgba(240,168,61,0.16); color: #b9760f; }
+
+/* ── CALC NOTE ── */
+.calc-note {
+  font-size: 11px; color: var(--c-mid); font-weight: 300;
+  margin: 0 0 16px 2px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+
+/* ── DATA SOURCES PANEL ── */
+.sources-card {
+  background: var(--c-white); border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px;
+}
+.sources-card-header {
+  padding: 14px 18px; font-size: 13px; font-weight: 700; color: var(--c-dark);
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.sources-card-header small { font-weight: 300; color: var(--c-mid); font-size: 11px; }
+.sources-legend {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  padding: 12px 18px; border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.sources-legend .param-source { margin-top: 0; }
+table.sources-table { width: 100%; border-collapse: collapse; }
+table.sources-table th, table.sources-table td {
+  text-align: left; padding: 10px 18px; font-size: 11px;
+  border-bottom: 1px solid rgba(0,0,0,0.05); vertical-align: top;
+}
+table.sources-table th {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--c-mid); font-weight: 700; background: #faf8f5;
+}
+table.sources-table td:first-child { font-weight: 600; color: var(--c-dark); white-space: nowrap; }
+table.sources-table td a { color: #138a64; }
+.src-type { display: inline-block; white-space: nowrap; font-weight: 600; font-size: 10px; }
+.src-type.t-of { color: #138a64; }
+.src-type.t-ca { color: #4d6970; }
+.src-type.t-in { color: #b9760f; }
+
 select, input[type="number"] {
   width: 100%;
   background: #f8f6f3;
@@ -590,6 +640,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
     <div>
       <div class="param-label">📅 Posición / Mes de contrato — Forward MATBA</div>
       <div class="param-hint" id="monthSubtitle">El futuro del mes elegido define el precio base (USD/t)</div>
+      <a class="param-source src-oficial" id="monthSource" target="_blank" rel="noopener"
+         href="https://matbarofex.com.ar/productos/agropecuarios">📡 Forward Matba Rofex · A3</a>
     </div>
     <select id="monthSelect" onchange="onMonthChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
   </div>
@@ -599,6 +651,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
     <div>
       <div class="param-label">🌎 Zona — Costo de producción (AGBI)</div>
       <div class="param-hint" id="zoneSubtitle">Define el costo de producción (USD/t) — siempre editable</div>
+      <a class="param-source src-oficial" id="zoneSource" target="_blank" rel="noopener"
+         href="https://www.agbi.com.ar/">📡 AGBI · AZ Group</a>
     </div>
     <select id="zoneSelect" onchange="onZoneChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
   </div>
@@ -615,6 +669,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="precioBase" value="280" step="1" min="1">
         <div class="param-hint" id="basePrecioHint">USD/t · Precio de referencia del mercado de futuros</div>
       </div>
+      <a class="param-source src-oficial" id="basePrecioSource" target="_blank" rel="noopener"
+         href="https://matbarofex.com.ar/productos/agropecuarios">📡 Forward Matba Rofex</a>
     </div>
 
     <div class="param-card accent" id="strikeCard">
@@ -623,6 +679,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="strike" value="280" step="1" min="1">
         <div class="param-hint" id="strikeHint">USD/t · Precio al que se activa la opción</div>
       </div>
+      <span class="param-source src-calc" id="strikeSource">🧮 Strike de opción Matba más cercano (editable)</span>
     </div>
 
     <div class="param-card accent" id="strikeAltoCard" style="display:none">
@@ -631,6 +688,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="strikeAlto" value="295" step="1" min="1">
         <div class="param-hint" id="strikeAltoHint">USD/t · Strike de la opción comprada</div>
       </div>
+      <span class="param-source src-calc" id="strikeAltoSource">🧮 Strike CALL Matba sobre el base (o ≈ +5% si no cotiza)</span>
     </div>
 
     <div class="param-card" id="strikeBajoCard" style="display:none">
@@ -639,6 +697,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="strikeBajo" value="260" step="1" min="1">
         <div class="param-hint">USD/t · Piso hasta donde llega la cobertura</div>
       </div>
+      <span class="param-source src-calc" id="strikeBajoSource">🧮 Strike PUT Matba bajo el base (o ≈ −7% si no cotiza)</span>
     </div>
 
     <div class="param-card orange" id="primaCard">
@@ -647,6 +706,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="prima" value="12" step="0.5" min="0">
         <div class="param-hint" id="primaHint">USD/t · Prima pagada</div>
       </div>
+      <a class="param-source src-oficial" id="primaSource" target="_blank" rel="noopener"
+         href="https://matbarofex.com.ar/productos/agropecuarios">📡 Prima real de opción Matba</a>
     </div>
 
     <div class="param-card orange" id="primaCallCard" style="display:none">
@@ -655,6 +716,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="primaCall" value="8" step="0.5" min="0">
         <div class="param-hint">USD/t · Prima recibida por vender el CALL</div>
       </div>
+      <a class="param-source src-oficial" id="primaCallSource" target="_blank" rel="noopener"
+         href="https://matbarofex.com.ar/productos/agropecuarios">📡 Prima real de opción Matba</a>
     </div>
 
     <div class="param-card red" id="barreraCard" style="display:none">
@@ -663,6 +726,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="barrera" value="310" step="1" min="1">
         <div class="param-hint">USD/t · Activa obligación de doble entrega</div>
       </div>
+      <span class="param-source src-calc">🧮 Estimado · ≈ Base +10% — ingresá la barrera real</span>
     </div>
 
     <div class="param-card orange">
@@ -671,6 +735,8 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <input type="number" id="costoProd" value="200" step="1" min="0">
         <div class="param-hint">USD/t · Para calcular margen neto por escenario</div>
       </div>
+      <a class="param-source src-oficial" id="costoSource" target="_blank" rel="noopener"
+         href="https://www.agbi.com.ar/">📡 Precio de equilibrio AGBI · AZ Group</a>
     </div>
 
   </div>
@@ -682,6 +748,10 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   </div>
 
   <!-- ── KPI STATS ── -->
+  <div class="calc-note">
+    <span class="param-source src-calc" style="margin-top:0">🧮 Calculado</span>
+    Todos los indicadores, el gráfico y la tabla de escenarios de abajo se <strong>calculan</strong> con las fórmulas de cada estrategia a partir de los parámetros de arriba. No son datos de mercado.
+  </div>
   <div class="kpi-grid">
     <div class="kpi-card positive">
       <div class="kpi-label">PVF Mínimo garantizado</div>
@@ -777,6 +847,86 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   </div>
 
   <div class="section-divider"></div>
+
+  <!-- ── PROCEDENCIA DE LOS DATOS ── -->
+  <div class="section-header" style="margin-bottom:16px">
+    <h1 style="font-size:16px">Procedencia de los Datos</h1>
+    <p>De dónde sale cada valor de esta pantalla. Nada está fijado de forma arbitraria sin aclararlo.</p>
+  </div>
+  <div class="sources-card">
+    <div class="sources-card-header">
+      🔎 Origen de cada dato <small id="sourcesUpdated"></small>
+    </div>
+    <div class="sources-legend">
+      <span class="param-source src-oficial">📡 Oficial / mercado — fuente publicada (con link)</span>
+      <span class="param-source src-calc">🧮 Calculado — derivado por fórmula</span>
+      <span class="param-source src-insumo">✍️ Insumo — lo cargás vos</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="sources-table">
+        <thead>
+          <tr><th>Dato</th><th>Tipo</th><th>Origen / Fórmula</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Precio Base / Posición — Mes de contrato</td>
+            <td><span class="src-type t-of">📡 Mercado</span></td>
+            <td>Precio del <strong>futuro (forward) de Matba Rofex</strong> para el mes elegido. La app lo lee de la planilla pública de datos de mercado <strong>A3 (Matba Rofex / Primary)</strong> vía <code>/api/sheets?tab=agropecuarios</code>. <span id="srcAgroLink"><a href="https://matbarofex.com.ar/productos/agropecuarios" target="_blank" rel="noopener">Matba Rofex — Agropecuarios</a></span>. El menú de meses lista solo las posiciones que tienen futuro cotizado.</td>
+          </tr>
+          <tr>
+            <td>Strike — Precio de Ejercicio</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Se toma el <strong>strike de opción Matba más cercano</strong> al precio base (de la misma cadena de opciones). Si el cultivo/mes no tiene opciones cotizadas, arranca igual al precio base. Editable.</td>
+          </tr>
+          <tr>
+            <td>Strike Alto / Strike Bajo</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Strikes reales de la cadena Matba (primer CALL por encima / último PUT por debajo del base). Si no hay opciones cotizadas, se estiman (≈ +5% y ≈ −7% del base). Editable.</td>
+          </tr>
+          <tr>
+            <td>Barrera Knock-Out</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Estimación automática a partir del precio base (≈ +10%). Reemplazá por la barrera pactada en el contrato.</td>
+          </tr>
+          <tr>
+            <td>Prima PUT / Prima CALL</td>
+            <td><span class="src-type t-of">📡 Mercado</span></td>
+            <td>Cuando hay cotización, es la <strong>prima real (valor teórico) de la opción en Matba Rofex</strong>, tomada de la misma planilla A3 (la etiqueta dice "Matba ✓"). Si el strike/mes no tiene opción cotizada, queda una estimación editable (≈ 4% / 2,5% del base) — la etiqueta lo aclara.</td>
+          </tr>
+          <tr>
+            <td>Costo de Producción / Zona</td>
+            <td><span class="src-type t-of">📡 Fuente externa</span></td>
+            <td>Precio de equilibrio (break-even, USD/t) de <strong>AGBI · AZ Group</strong> para la zona y campaña elegidas, vía <code>/api/costos</code>. <span id="srcCostoLink"><a href="https://www.agbi.com.ar/" target="_blank" rel="noopener">agbi.com.ar</a></span>. Es editable: podés cargar tu costo real. AGBI no publica todos los cultivos (ej. trigo).</td>
+          </tr>
+          <tr>
+            <td>FAS al productor</td>
+            <td><span class="src-type t-of">📡 Oficial</span></td>
+            <td>FAS teórico oficial de la DINEM (MAGYP), vía <code>/api/fas</code>. Fuente: <a href="https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx" target="_blank" rel="noopener">DINEM — FAS Teórico</a>.</td>
+          </tr>
+          <tr>
+            <td>FOB oficial (referencia)</td>
+            <td><span class="src-type t-of">📡 Oficial</span></td>
+            <td>Precio FOB oficial de la DINEM (MAGYP), vía <code>/api/fob</code>. Se usa como base de respaldo si no hay forward Matba. Fuente: <a href="https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx" target="_blank" rel="noopener">DINEM — Precios FOB</a>.</td>
+          </tr>
+          <tr>
+            <td>Dólar futuro</td>
+            <td><span class="src-type t-of">📡 Mercado</span></td>
+            <td>Dólar futuro (ROFEX) para pesificar el FAS, vía <code>/api/tc</code>. Fuente: <a href="https://mercados.ambito.com/dolarfuturo/general" target="_blank" rel="noopener">Ámbito — Dólar Futuro ROFEX</a>.</td>
+          </tr>
+          <tr>
+            <td>Girasol</td>
+            <td><span class="src-type t-in">✍️ Insumo</span></td>
+            <td>No hay forward de girasol en Matba Rofex en esta fuente, así que el precio base es <strong>referencial y debe ingresarse manualmente</strong>.</td>
+          </tr>
+          <tr>
+            <td>PVF, KPIs, márgenes y escenarios</td>
+            <td><span class="src-type t-ca">🧮 Calculado</span></td>
+            <td>Resultado de aplicar la fórmula de la estrategia seleccionada sobre los parámetros anteriores. Los escenarios usan variaciones fijas de ±15%, ±30% y +40% sobre el precio base.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- ── DESC CARDS ── -->
   <div class="section-header" style="margin-bottom:16px">
@@ -1171,6 +1321,9 @@ function render() {
       <div class="desc-text">${d.text}</div>
 
     </div>`).join('');
+
+  // ── Badges de procedencia (Oficial / Calculado / Insumo) ──
+  updateSourceBadges();
 }
 
 // ═══════════════════════════════════════════════
@@ -1196,7 +1349,88 @@ const CACHE_KEY  = 'simcob_live_v1';
 
 let LIVE = { chains:{}, tc:null, fas:{}, fobSpot:{}, fecha:null,
              costos:{}, regiones:[], campana:null,
+             agroUrl:null, costoUrl:null,
              loaded:false, fromCache:false, cacheTs:0 };
+
+// URLs de las fuentes (las APIs devuelven la URL exacta usada; estas son el fallback)
+const SRC = {
+  matba:    'https://matbarofex.com.ar/productos/agropecuarios',
+  agbi:     'https://www.agbi.com.ar/',
+  fasDinem: 'https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx',
+  fobDinem: 'https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx',
+};
+
+// Setea un badge de procedencia (Oficial/Calculado/Insumo) con su link
+function setBadge(id, cls, text, href) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'param-source ' + cls;
+  el.textContent = text;
+  if (el.tagName === 'A') {
+    if (href) { el.href = href; el.target = '_blank'; el.rel = 'noopener'; }
+    else el.removeAttribute('href');
+  }
+}
+
+// Refresca todos los badges según el estado real de los datos cargados
+function updateSourceBadges() {
+  const crop = currentCrop;
+  const m = currentMonthEntry();
+  const isGirasol = crop === 'girasol';
+  // Badges → sitio oficial estable; el link técnico exacto (planilla A3 / xlsx) va en el panel
+  const agroUrl = SRC.matba;
+  const costoUrl = SRC.agbi;
+
+  // Precio base + selector de mes (Forward Matba)
+  if (m) {
+    setBadge('basePrecioSource', 'src-oficial', `📡 Forward Matba ${m.label} · US$${m.future.toFixed(1)} · Matba Rofex →`, agroUrl);
+    setBadge('monthSource', 'src-oficial', '📡 Forward Matba Rofex (vía planilla pública A3) →', agroUrl);
+  } else if (!isGirasol && LIVE.fobSpot && LIVE.fobSpot[crop] > 0) {
+    setBadge('basePrecioSource', 'src-oficial', '📡 FOB oficial DINEM/MAGYP (sin forward Matba) · ver fuente →', SRC.fobDinem);
+    setBadge('monthSource', 'src-insumo', '✍️ Sin forward Matba para este cultivo · base editable', SRC.matba);
+  } else if (isGirasol) {
+    setBadge('basePrecioSource', 'src-insumo', '✍️ Insumo · sin forward Matba de girasol — ingresá el precio', SRC.matba);
+    setBadge('monthSource', 'src-insumo', '✍️ Girasol sin forward Matba — precio editable a mano', SRC.matba);
+  } else {
+    setBadge('basePrecioSource', 'src-insumo', '⚠ Mercado no disponible · valor de referencia editable', SRC.matba);
+    setBadge('monthSource', 'src-insumo', '⚠ Forward Matba no disponible · valor editable', SRC.matba);
+  }
+
+  // Primas: reales si vienen de la cadena de opciones, si no estimadas
+  const primaReal = !!primaSourceNote && !!m;
+  ['primaSource', 'primaCallSource'].forEach(id => {
+    if (primaReal) setBadge(id, 'src-oficial', '📡 Prima real de opción Matba (valor teórico) · ver fuente →', agroUrl);
+    else           setBadge(id, 'src-insumo', '✍️ Estimada (≈% del base) · prima real de opción Matba — editable', SRC.matba);
+  });
+
+  // Costo de producción / zona (AGBI)
+  const c = costoFor(crop, currentZone);
+  if (c && c.costoProd != null) {
+    const camp = LIVE.campana ? ' · ' + LIVE.campana : '';
+    setBadge('costoSource', 'src-oficial', `📡 Precio equilibrio AGBI · ${currentZone}${camp} · ver fuente →`, costoUrl);
+    setBadge('zoneSource', 'src-oficial', '📡 Costos AGBI · AZ Group · ver fuente →', costoUrl);
+  } else {
+    setBadge('costoSource', 'src-insumo', '✍️ Insumo · ingresá tu costo (AGBI no cubre este caso)', SRC.agbi);
+    setBadge('zoneSource', 'src-insumo', '✍️ Sin costos AGBI para este cultivo · costo editable', SRC.agbi);
+  }
+
+  // Panel "Procedencia": links exactos a lo que leyó la app + estado
+  const a = document.getElementById('srcAgroLink');
+  if (a) a.innerHTML = `<a href="${SRC.matba}" target="_blank" rel="noopener">Matba Rofex — Agropecuarios</a>`
+    + (LIVE.agroUrl ? ` · <a href="${LIVE.agroUrl}" target="_blank" rel="noopener">planilla A3 que leyó la app →</a>` : '');
+  const cl = document.getElementById('srcCostoLink');
+  if (cl) cl.innerHTML = `<a href="${SRC.agbi}" target="_blank" rel="noopener">agbi.com.ar</a>`
+    + (LIVE.costoUrl ? ` · <a href="${LIVE.costoUrl}" target="_blank" rel="noopener">archivo AGBI que leyó la app →</a>` : '');
+  const upd = document.getElementById('sourcesUpdated');
+  if (upd) {
+    if (LIVE.loaded) {
+      const s = LIVE.fromCache ? `caché (${cacheAge(LIVE.cacheTs)})` : 'datos en vivo';
+      upd.textContent = `· ${s}${LIVE.fecha ? ' · actualizado ' + LIVE.fecha : ''}`;
+    } else {
+      upd.textContent = '· conectando con las fuentes…';
+    }
+  }
+}
 let currentMonthKey = null;
 let currentZone = null;
 let primaSourceNote = '';   // nota "prima real MATba" para mostrar en el hint (persistente entre renders)
@@ -1240,6 +1474,7 @@ async function fetchLiveAll() {
   if (agro.status === 'fulfilled' && agro.value && agro.value.chains) {
     LIVE.chains = agro.value.chains;
     LIVE.fecha  = agro.value.actualizado || null;
+    LIVE.agroUrl = agro.value.fuenteUrl || null;
     LIVE.loaded = true; LIVE.fromCache = false;
   }
   if (fin.status === 'fulfilled' && Array.isArray(fin.value?.dolares)) LIVE.tc = pickTC(fin.value.dolares);
@@ -1249,11 +1484,13 @@ async function fetchLiveAll() {
     LIVE.costos   = cost.value.costos;
     LIVE.regiones = cost.value.regiones || [];
     LIVE.campana  = cost.value.campana || null;
+    LIVE.costoUrl = cost.value.fuenteUrl || null;
   }
 
   if (LIVE.loaded || LIVE.regiones.length) {
     saveCache({ chains: LIVE.chains, tc: LIVE.tc, fas: LIVE.fas, fobSpot: LIVE.fobSpot, fecha: LIVE.fecha,
-                costos: LIVE.costos, regiones: LIVE.regiones, campana: LIVE.campana });
+                costos: LIVE.costos, regiones: LIVE.regiones, campana: LIVE.campana,
+                agroUrl: LIVE.agroUrl, costoUrl: LIVE.costoUrl });
   }
   if (!LIVE.loaded) {
     const c = loadCache();
