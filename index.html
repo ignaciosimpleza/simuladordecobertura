@@ -871,7 +871,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
           <tr>
             <td>Precio Base / Posición — Mes de contrato</td>
             <td><span class="src-type t-of">📡 Mercado</span></td>
-            <td>Precio del <strong>futuro (forward) de Matba Rofex</strong> para el mes elegido, publicado en la planilla pública <strong>A3 (Matba Rofex / Primary)</strong>. El valor debe coincidir con el de la fuente: <span id="srcAgroLink"><a href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289" target="_blank" rel="noopener">planilla pública A3 · Agropecuarios →</a></span>. El menú de meses lista solo las posiciones con futuro cotizado.</td>
+            <td>Precio del <strong>futuro (forward) de Matba Rofex</strong> para el mes elegido, publicado en la planilla pública <strong>A3 (Matba Rofex / Primary)</strong>. En el archivo, buscá la <strong>fila del contrato</strong> (ej. <code>SOJ.ROS/MAY26</code> — el código indica cultivo y mes) y leé la columna <strong>«Ajuste / Valor teórico»</strong>. El badge del Precio Base muestra el nombre exacto de la fila. Fuente: <span id="srcAgroLink"><a href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289" target="_blank" rel="noopener">planilla pública A3 · Agropecuarios →</a></span>. El menú de meses lista solo las posiciones con futuro cotizado.</td>
           </tr>
           <tr>
             <td>Strike — Precio de Ejercicio</td>
@@ -891,7 +891,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
           <tr>
             <td>Prima PUT / Prima CALL</td>
             <td><span class="src-type t-of">📡 Mercado</span></td>
-            <td>Cuando hay cotización, es la <strong>prima real (valor teórico) de la opción en Matba Rofex</strong>, tomada de la misma planilla A3 (la etiqueta dice "Matba ✓"). Si el strike/mes no tiene opción cotizada, queda una estimación editable (≈ 4% / 2,5% del base) — la etiqueta lo aclara.</td>
+            <td>Cuando hay cotización, es la <strong>prima real (valor teórico) de la opción en Matba Rofex</strong>, tomada de la misma planilla A3. En el archivo, buscá la <strong>fila de la opción</strong> (ej. <code>SOJ.ROS/MAY26 320 P</code> — incluye strike y P/C) y leé la columna <strong>«Ajuste / Valor teórico»</strong>; el badge de la prima muestra el nombre exacto de la fila. Si el strike/mes no tiene opción cotizada, queda una estimación editable (≈ 4% / 2,5% del base) — la etiqueta lo aclara.</td>
           </tr>
           <tr>
             <td>Costo de Producción / Zona</td>
@@ -1388,8 +1388,9 @@ function updateSourceBadges() {
 
   // Precio base + selector de mes (Forward Matba)
   if (m) {
-    setBadge('basePrecioSource', 'src-oficial', `📡 Forward Matba ${m.label} = US$${m.future.toFixed(1)} · planilla A3 →`, fwdUrl);
-    setBadge('monthSource', 'src-oficial', '📡 Forward Matba Rofex · ver en planilla pública A3 →', fwdUrl);
+    const fila = m.contrato ? `fila «${m.contrato}»` : `fila del futuro ${m.label}`;
+    setBadge('basePrecioSource', 'src-oficial', `📡 A3 · ${fila} · col. Ajuste/Valor teórico = US$${m.future.toFixed(1)} →`, fwdUrl);
+    setBadge('monthSource', 'src-oficial', `📡 Forward Matba en A3 · buscá ${fila}, col. Ajuste/Valor teórico →`, fwdUrl);
   } else if (!isGirasol && LIVE.fobSpot && LIVE.fobSpot[crop] > 0) {
     setBadge('basePrecioSource', 'src-oficial', `📡 FOB oficial DINEM/MAGYP = US$${Math.round(LIVE.fobSpot[crop])} · ver en DINEM →`, SRC.fobDinem);
     setBadge('monthSource', 'src-insumo', '✍️ Sin forward Matba para este cultivo · base editable', fwdUrl);
@@ -1401,11 +1402,28 @@ function updateSourceBadges() {
     setBadge('monthSource', 'src-insumo', '⚠ Forward Matba no disponible · valor editable', fwdUrl);
   }
 
-  // Primas: reales si vienen de la cadena de opciones, si no estimadas
+  // Primas: reales si vienen de la cadena de opciones, si no estimadas.
+  // Identificamos la fila exacta de A3 que alimentó cada prima según la estrategia.
   const primaReal = !!primaSourceNote && !!m;
-  ['primaSource', 'primaCallSource'].forEach(id => {
-    if (primaReal) setBadge(id, 'src-oficial', '📡 Prima real de opción Matba (valor teórico) · planilla A3 →', fwdUrl);
-    else           setBadge(id, 'src-insumo', '✍️ Estimada (≈% del base) · prima real de opción Matba — editable', fwdUrl);
+  let primaOpt = null, primaCallOpt = null;
+  if (m) {
+    const sStrike = parseFloat(document.getElementById('strike').value);
+    const sAlto   = parseFloat(document.getElementById('strikeAlto').value);
+    switch (currentStratKey) {
+      case 'put':                       primaOpt = nearestPrima(m.puts, sStrike); break;
+      case 'call_lanzado': case 'sintetico': primaOpt = nearestPrima(m.calls, sStrike); break;
+      case 'collar':                    primaOpt = nearestPrima(m.puts, sStrike); primaCallOpt = nearestPrima(m.calls, sAlto); break;
+    }
+  }
+  const primaRowOk = opt => opt && opt.contrato && currentStratKey !== 'bull_spread';
+  [['primaSource', primaOpt], ['primaCallSource', primaCallOpt]].forEach(([id, opt]) => {
+    if (primaReal && primaRowOk(opt)) {
+      setBadge(id, 'src-oficial', `📡 A3 · fila «${opt.contrato}» · col. Ajuste/Valor teórico = US$${opt.prima} →`, fwdUrl);
+    } else if (primaReal && id === 'primaSource') {
+      setBadge(id, 'src-oficial', '📡 Prima real de opción Matba · col. Ajuste/Valor teórico · planilla A3 →', fwdUrl);
+    } else {
+      setBadge(id, 'src-insumo', '✍️ Estimada (≈% del base) · prima real de opción Matba — editable', fwdUrl);
+    }
   });
 
   // Costo de producción / zona (AGBI)
@@ -1605,7 +1623,7 @@ function lastStrikeBelow(list, target) {
 function nearestPrima(list, target) {
   if (!list || !list.length) return null;
   const e = list.reduce((b, o) => Math.abs(o.strike - target) < Math.abs(b.strike - target) ? o : b);
-  return { strike: e.strike, prima: e.prima };
+  return { strike: e.strike, prima: e.prima, contrato: e.contrato || null };
 }
 
 // Setea base + strikes + primas reales (o heurística si no hay cadena)
@@ -1681,26 +1699,34 @@ function refreshPrimasFromChain() {
 }
 
 // Tira de referencia: Forward / FAS / Dólar
-function chip(label, val, color) {
+function chip(label, val, color, src, srcTitle) {
+  const link = src
+    ? ` <a href="${src}" target="_blank" rel="noopener" title="${srcTitle || 'Ver fuente'}" style="color:${color};text-decoration:none;font-weight:800">↗ fuente</a>`
+    : '';
   return `<span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e7e2d9;border-left:3px solid ${color};border-radius:7px;padding:5px 10px">`
-       + `<b style="color:#3a3a3a">${label}:</b> ${val}</span>`;
+       + `<b style="color:#3a3a3a">${label}:</b> ${val}${link}</span>`;
 }
 function updateMarketRef() {
   const el = document.getElementById('marketRef');
   if (!el) return;
   const chips = [];
   const m = currentMonthEntry();
-  if (m) chips.push(chip('Forward MATba', `US$${m.future.toFixed(1)}/t · ${m.label}`, '#32E8A9'));
+  if (m) chips.push(chip('Forward MATba', `US$${m.future.toFixed(1)}/t · ${m.label}`, '#32E8A9',
+    SRC.a3Agro, m.contrato ? `A3 · fila ${m.contrato} · col. Ajuste/Valor teórico` : 'Planilla pública A3 · Agropecuarios'));
   const fasV = LIVE.fas ? LIVE.fas[currentCrop] : null;
   if (fasV > 0) {
-    chips.push(chip('FAS al productor', `$${Math.round(fasV).toLocaleString('es-AR')}/t`, '#6C868C'));
-    if (LIVE.tc > 0) chips.push(chip('FAS en USD', `US$${(fasV / LIVE.tc).toFixed(1)}/t`, '#6C868C'));
+    chips.push(chip('FAS al productor', `$${Math.round(fasV).toLocaleString('es-AR')}/t`, '#6C868C',
+      SRC.fasDinem, 'DINEM/MAGYP · FAS Teórico (en pesos)'));
+    if (LIVE.tc > 0) chips.push(chip('FAS en USD 🧮', `US$${(fasV / LIVE.tc).toFixed(1)}/t`, '#6C868C',
+      SRC.fasDinem, 'Calculado: FAS (DINEM, en $) ÷ Dólar futuro (A3 · Financiero)'));
   }
-  if (LIVE.tc > 0) chips.push(chip('Dólar futuro', `$${LIVE.tc.toFixed(1)}`, '#F0A83D'));
+  if (LIVE.tc > 0) chips.push(chip('Dólar futuro', `$${LIVE.tc.toFixed(1)}`, '#F0A83D',
+    SRC.a3Dolar, 'A3 · Financiero · dólar futuro ROFEX'));
   const c = costoFor(currentCrop, currentZone);
   if (c && c.costoProd != null) {
     const camp = LIVE.campana ? ` · ${LIVE.campana}` : '';
-    chips.push(chip('Costo AGBI', `US$${c.costoProd}/t · ${currentZone}${camp}`, '#CD6155'));
+    chips.push(chip('Costo AGBI', `US$${c.costoProd}/t · ${currentZone}${camp}`, '#CD6155',
+      SRC.agbi, 'AGBI · AZ Group · costos por zona/cultivo'));
   }
   el.innerHTML = chips.join('');
   el.style.display = chips.length ? 'flex' : 'none';

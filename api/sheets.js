@@ -175,13 +175,15 @@ function buildChains(data) {
       const m = ensure(key, d.mes, d.año);
       m.future = d.precio;
       m.vto = d.vencimiento;
+      m.contrato = d.contrato;   // nombre de la fila en A3 (ej. "SOJ.ROS/MAY26")
+      m.producto = d.producto;   // ej. "SOJ Dolar MATba"
     });
 
     // Opciones → puts/calls del mes correspondiente (prima = d.precio)
     recs.filter(d => d.tipo === 'Opción' && d.mes && d.año && d.strike > 0).forEach(d => {
       const key = `${MES_LABEL[d.mes]}${String(d.año).slice(-2)}`.toUpperCase();
       const m = ensure(key, d.mes, d.año);
-      const entry = { strike: d.strike, prima: d.precio ?? 0 };
+      const entry = { strike: d.strike, prima: d.precio ?? 0, contrato: d.contrato };
       if (d.putCall === 'PUT') m.puts.push(entry);
       else if (d.putCall === 'CALL') m.calls.push(entry);
     });
