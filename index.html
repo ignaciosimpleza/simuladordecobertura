@@ -448,6 +448,28 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .legend-dash  { width: 22px; height: 0; }
 .chart-wrap   { position: relative; height: 360px; }
 
+/* ── PIZARRA BCR ── */
+.pz-date {
+  border: 1px solid #d8d2c8; border-radius: 7px; padding: 5px 8px;
+  font-family: var(--font); font-size: 11px; color: var(--c-dark);
+  background: #fff; outline: none; cursor: pointer;
+}
+.pz-date:focus { border-color: var(--c-accent); }
+.pz-periods { display: flex; gap: 5px; }
+.pz-period-btn {
+  font-family: var(--font); font-size: 10px; font-weight: 600;
+  color: var(--c-mid); background: #fff; border: 1px solid #d8d2c8;
+  border-radius: 7px; padding: 5px 10px; cursor: pointer; transition: all 0.2s;
+}
+.pz-period-btn:hover, .pz-period-btn.active {
+  border-color: var(--c-accent); color: var(--c-dark);
+  background: rgba(50,232,169,0.12);
+}
+.pz-grain-btn {
+  font-family: var(--font); font-size: 11px; font-weight: 600;
+  border-radius: 7px; padding: 5px 12px; cursor: pointer; transition: all 0.2s;
+}
+
 /* ── WARNING BOX ── */
 .warning-box {
   display: none;
@@ -573,6 +595,9 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   <div class="nav-item" onclick="setStrat('forward_min')" id="nav-forward_min"> <span class="nav-icon">🎯</span> Forward Mínimo</div>
   <div class="nav-item" onclick="setStrat('acumulador')"  id="nav-acumulador">  <span class="nav-icon">⚠️</span> Acumulador</div>
 
+  <div class="sidebar-section">Mercado</div>
+  <div class="nav-item" onclick="showPizarra()" id="nav-pizarra"><span class="nav-icon">📈</span> Pizarra BCR — Histórico</div>
+
   <div class="sidebar-strategy-info">
     <div class="ssi-label">Estrategia activa</div>
     <div class="ssi-name" id="ssi-name">Compra de PUT</div>
@@ -599,7 +624,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
 
 <!-- ══════════════ MAIN ══════════════ -->
 <div id="main">
-<div class="page">
+<div class="page" id="page-sim">
 
   <!-- Print header (hidden on screen, visible on print) -->
   <div class="print-header" style="display:none">
@@ -951,6 +976,54 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   <div class="desc-grid" id="descCards"></div>
 
 </div>
+
+<!-- ══════════════ PÁGINA: PIZARRA BCR (HISTÓRICO) ══════════════ -->
+<div class="page" id="page-pizarra" style="display:none">
+
+  <div class="print-header" style="display:none">
+    <div>
+      <div class="print-header-title">Simpleza · Pizarra BCR — Histórico</div>
+      <div class="print-header-sub" id="print-date-pz"></div>
+    </div>
+    <div class="print-header-logo">Simpleza</div>
+  </div>
+
+  <div class="section-header">
+    <h1>Pizarra BCR — Histórico <span class="evolution-tag">Precios de Pizarra</span></h1>
+    <p>Serie histórica de <strong>Precios de Pizarra</strong> ($/t) publicados por la <strong>Cámara Arbitral de Cereales · Bolsa de Comercio de Rosario</strong>. Elegí el grano y el rango de fechas.</p>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-card-header">
+      <div>
+        <h3>Evolución del precio de pizarra ($/t)</h3>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;color:var(--c-mid)">Desde</span>
+        <input type="date" id="pz-desde" onchange="onPizarraDate()" class="pz-date">
+        <span style="font-size:10px;font-weight:600;color:var(--c-mid)">Hasta</span>
+        <input type="date" id="pz-hasta" onchange="onPizarraDate()" class="pz-date">
+        <div class="pz-periods" id="pz-periods"></div>
+      </div>
+    </div>
+    <div id="pz-grains" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div class="chart-wrap"><canvas id="pizarraChart"></canvas></div>
+    <div class="chart-sub" id="pz-foot" style="margin-top:14px;margin-bottom:0">Precios de pizarra ($/t) — Cámara Arbitral de Cereales, Rosario.</div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="sources-card">
+    <div class="sources-card-header">🔎 Origen del dato</div>
+    <div style="padding:14px 18px;font-size:12px;color:var(--c-mid);line-height:1.7">
+      Los precios provienen de la <strong>Cámara Arbitral de Cereales (BCR)</strong> —
+      <a href="https://www.cac.bcr.com.ar/es/precios-de-pizarra/consultas" target="_blank" rel="noopener">precios de pizarra · consultas →</a>.
+      La serie se sincroniza diariamente y se sirve desde
+      <a href="https://granos.vercel.app/api/pizarra" target="_blank" rel="noopener">granos.vercel.app/api/pizarra →</a>.
+    </div>
+  </div>
+
+</div>
 </div>
 
 <!-- ══════════════ SCRIPT ══════════════ -->
@@ -1137,10 +1210,173 @@ function genRange(base) {
 
 function setStrat(key) {
   currentStratKey = key;
+  showSimView();              // si veníamos de la pizarra, volvemos al simulador
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById('nav-' + key)?.classList.add('active');
   refreshPrimasFromChain();   // re-deriva primas reales para la nueva estrategia
   render();
+}
+
+// ═══════════════════════════════════════════════
+//  NAVEGACIÓN DE VISTAS (Simulador ↔ Pizarra)
+// ═══════════════════════════════════════════════
+function showSimView() {
+  document.getElementById('page-sim').style.display = '';
+  document.getElementById('page-pizarra').style.display = 'none';
+}
+function showPizarra() {
+  document.getElementById('page-sim').style.display = 'none';
+  document.getElementById('page-pizarra').style.display = '';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-pizarra')?.classList.add('active');
+  const badge = document.getElementById('topbar-badge');
+  if (badge) badge.textContent = '📈 Pizarra BCR';
+  if (!PIZARRA.loaded && !PIZARRA.loading) loadPizarra();
+  else renderPizarraCard();
+}
+
+// ── Pizarra BCR (histórico) — datos de granos.vercel.app/api/pizarra ──
+// La serie la sincroniza diariamente el proyecto «granos» a Turso; su /api/pizarra
+// expone CORS abierto, así que la consumimos directo sin duplicar backend.
+const PIZARRA_API = 'https://granos.vercel.app/api/pizarra';
+let pizarraChart = null;
+const PIZARRA = {
+  data: {}, grano: 'soja', desde: '', hasta: '',
+  loaded: false, loading: false, error: false,
+};
+const PIZARRA_GRAINS = [
+  { k:'soja', lbl:'Soja' }, { k:'maiz', lbl:'Maíz' }, { k:'trigo', lbl:'Trigo' },
+  { k:'girasol', lbl:'Girasol' }, { k:'sorgo', lbl:'Sorgo' },
+];
+const PIZARRA_COLORS = { soja:'#32E8A9', maiz:'#F0A83D', trigo:'#CD6155', girasol:'#6C868C', sorgo:'#8B7FA5' };
+const PIZARRA_PERIODS = [ {d:90,l:'90D'}, {d:365,l:'1A'}, {d:1825,l:'5A'}, {d:0,l:'Todo'} ];
+
+function pzIsoDate(d) { return d.toISOString().slice(0,10); }
+function setPizarraRangeDays(d) {
+  if (d > 0) {
+    const f = new Date(); f.setDate(f.getDate() - d);
+    PIZARRA.desde = pzIsoDate(f); PIZARRA.hasta = pzIsoDate(new Date());
+  } else { PIZARRA.desde = ''; PIZARRA.hasta = ''; }
+  renderPizarraCard();
+}
+function onPizarraDate() {
+  PIZARRA.desde = document.getElementById('pz-desde')?.value || '';
+  PIZARRA.hasta = document.getElementById('pz-hasta')?.value || '';
+  renderPizarraCard();
+}
+function setPizarraGrain(g) { PIZARRA.grano = g; renderPizarraCard(); }
+
+async function loadPizarra() {
+  PIZARRA.loading = true; PIZARRA.error = false;
+  renderPizarraCard();
+  try {
+    const res = await fetch(PIZARRA_API, { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    PIZARRA.data = json.series || {};
+    PIZARRA.loaded = true;
+    if ((PIZARRA.data[PIZARRA.grano] || []).length === 0) {
+      const first = PIZARRA_GRAINS.find(g => (PIZARRA.data[g.k] || []).length > 0);
+      if (first) PIZARRA.grano = first.k;
+    }
+    if (!PIZARRA.desde && !PIZARRA.hasta) {
+      const f = new Date(); f.setFullYear(f.getFullYear() - 1);
+      PIZARRA.desde = pzIsoDate(f); PIZARRA.hasta = pzIsoDate(new Date());
+    }
+  } catch (e) {
+    console.warn('[pizarra]', e.message);
+    PIZARRA.error = true;
+  } finally {
+    PIZARRA.loading = false;
+    renderPizarraCard();
+  }
+}
+
+function renderPizarraCard() {
+  const gWrap = document.getElementById('pz-grains');
+  if (gWrap) {
+    gWrap.innerHTML = PIZARRA_GRAINS.map(g => {
+      const on = PIZARRA.grano === g.k;
+      const has = (PIZARRA.data[g.k] || []).length > 0;
+      const col = PIZARRA_COLORS[g.k];
+      return `<button class="pz-grain-btn" onclick="setPizarraGrain('${g.k}')" ${has?'':'disabled'}
+        style="cursor:${has?'pointer':'not-allowed'};border:1px solid ${on?col:'#d8d2c8'};
+        background:${on?col:'#fff'};color:${on?'#1a1d23':(has?'var(--c-mid)':'#bcb8b0')};opacity:${has?1:0.5}">${g.lbl}</button>`;
+    }).join('');
+  }
+  const pWrap = document.getElementById('pz-periods');
+  if (pWrap) {
+    pWrap.innerHTML = PIZARRA_PERIODS.map(p =>
+      `<button class="pz-period-btn" onclick="setPizarraRangeDays(${p.d})">${p.l}</button>`
+    ).join('');
+  }
+  const dEl = document.getElementById('pz-desde'); if (dEl) dEl.value = PIZARRA.desde || '';
+  const hEl = document.getElementById('pz-hasta'); if (hEl) hEl.value = PIZARRA.hasta || '';
+
+  const foot = document.getElementById('pz-foot');
+  const serieFull = PIZARRA.data[PIZARRA.grano] || [];
+
+  if (serieFull.length === 0) {
+    if (pizarraChart) { pizarraChart.destroy(); pizarraChart = null; }
+    if (foot) {
+      if (PIZARRA.loading)    foot.textContent = 'Cargando histórico…';
+      else if (PIZARRA.error) foot.textContent = 'No se pudo leer la serie de pizarra. Reintentá en unos minutos.';
+      else                    foot.textContent = 'Sin datos para este grano.';
+    }
+    return;
+  }
+
+  let serie = serieFull;
+  if (PIZARRA.desde) serie = serie.filter(p => p.fecha >= PIZARRA.desde);
+  if (PIZARRA.hasta) serie = serie.filter(p => p.fecha <= PIZARRA.hasta);
+
+  if (serie.length === 0) {
+    if (pizarraChart) { pizarraChart.destroy(); pizarraChart = null; }
+    if (foot) foot.textContent = 'Sin registros en el rango elegido — ampliá las fechas.';
+    return;
+  }
+
+  const labels = serie.map(p => {
+    const [y,m,d] = p.fecha.split('-');
+    return `${d}/${m}/${String(y).slice(-2)}`;
+  });
+  const data  = serie.map(p => p.precio);
+  const color = PIZARRA_COLORS[PIZARRA.grano] || '#32E8A9';
+  const fmt$  = v => '$' + Number(v).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+
+  if (foot) {
+    const precios = serie.map(p => p.precio);
+    const last = serie[serie.length-1];
+    const min = Math.min(...precios), max = Math.max(...precios);
+    foot.innerHTML = `Pizarra $/t · último: <strong>${fmt$(last.precio)}</strong> (${labels[labels.length-1]}) · mín ${fmt$(min)} · máx ${fmt$(max)} · ${serie.length} registros · Fuente: Cámara Arbitral de Cereales, Rosario.`;
+  }
+
+  const ctx = document.getElementById('pizarraChart');
+  if (!ctx) return;
+  if (pizarraChart) pizarraChart.destroy();
+  pizarraChart = new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [{
+      label: (PIZARRA_GRAINS.find(g=>g.k===PIZARRA.grano)?.lbl || '') + ' — pizarra ($/t)',
+      data, borderColor: color, backgroundColor: color + '22',
+      fill: true, borderWidth: 2, pointRadius: 0, tension: 0.25,
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#7F7F7F', font: { size: 11 }, boxWidth: 14, padding: 10 } },
+        tooltip: {
+          backgroundColor: '#fff', borderColor: '#dde1e7', borderWidth: 1,
+          titleColor: '#2d3436', bodyColor: '#7F7F7F', padding: 10,
+          callbacks: { label: c => ' ' + fmt$(c.parsed.y) },
+        },
+      },
+      scales: {
+        x: { grid: { color: '#f3f4f6' }, ticks: { color: '#9ca3af', maxTicksLimit: 8 } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { color: '#9ca3af', callback: v => fmt$(v) } },
+      },
+    },
+  });
 }
 
 // ═══════════════════════════════════════════════
