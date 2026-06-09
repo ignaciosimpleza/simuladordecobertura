@@ -149,7 +149,7 @@ body { font-family: var(--font); background: var(--c-bg); color: var(--c-dark); 
     padding-bottom: 0 !important;
   }
 
-  .page { padding: 0 !important; animation: none !important; }
+  .page { padding: 0 !important; max-width: none !important; margin: 0 !important; animation: none !important; }
 
   /* ── Print header ── */
   .print-header {
@@ -213,7 +213,15 @@ body { font-family: var(--font); background: var(--c-bg); color: var(--c-dark); 
   min-height: 100vh;
   padding-bottom: 40px;
 }
-.page { padding: 28px 32px; }
+.page { padding: 28px 36px; max-width: 1480px; margin: 0 auto; }
+
+/* Selectores Posición + Zona, lado a lado y prolijos */
+.selectors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
 
 /* ── SECTION HEADER ── */
 .section-header { margin-bottom: 22px; }
@@ -635,10 +643,10 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   <div class="fetch-info">
     <span class="fetch-status fetch-status-loading" id="fetchStatus">⟳ Cargando precios de mercado...</span>
   </div>
-  </div>
 
-  <!-- ── SELECTOR DE POSICIÓN (MES DE CONTRATO MATBA) ── -->
-  <div class="param-card" id="monthSection" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px">
+  <!-- ── SELECTORES DE POSICIÓN (Forward MATBA) Y ZONA (Costo AGBI) ── -->
+  <div class="selectors-grid">
+  <div class="param-card" id="monthSection" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:0">
     <div>
       <div class="param-label">📅 Posición / Mes de contrato — Forward MATBA</div>
       <div class="param-hint" id="monthSubtitle">El futuro del mes elegido define el precio base (USD/t)</div>
@@ -649,7 +657,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   </div>
 
   <!-- ── SELECTOR DE ZONA (COSTO DE PRODUCCIÓN · AGBI) ── -->
-  <div class="param-card" id="zoneSection" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px">
+  <div class="param-card" id="zoneSection" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:0">
     <div>
       <div class="param-label">🌎 Zona — Costo de producción (AGBI)</div>
       <div class="param-hint" id="zoneSubtitle">Define el costo de producción (USD/t) — siempre editable</div>
@@ -658,9 +666,10 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
     </div>
     <select id="zoneSelect" onchange="onZoneChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
   </div>
+  </div>
 
   <!-- ── TIRA DE REFERENCIA (FAS / Dólar) ── -->
-  <div id="marketRef" style="display:none;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-size:11px;color:var(--c-mid,#7f7f7f)"></div>
+  <div id="marketRef" style="display:none;gap:10px;flex-wrap:wrap;margin-bottom:20px;font-size:11px;color:var(--c-mid,#7f7f7f)"></div>
 
   <!-- ── PARÁMETROS ── -->
   <div class="param-grid" id="paramGrid">
