@@ -641,7 +641,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
       <div class="param-label">📅 Posición / Mes de contrato — Forward MATBA</div>
       <div class="param-hint" id="monthSubtitle">El futuro del mes elegido define el precio base (USD/t)</div>
       <a class="param-source src-oficial" id="monthSource" target="_blank" rel="noopener"
-         href="/api/sheets?tab=agropecuarios">📡 Forward Matba Rofex · dato crudo</a>
+         href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289">📡 Forward Matba Rofex · planilla A3</a>
     </div>
     <select id="monthSelect" onchange="onMonthChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
   </div>
@@ -652,7 +652,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
       <div class="param-label">🌎 Zona — Costo de producción (AGBI)</div>
       <div class="param-hint" id="zoneSubtitle">Define el costo de producción (USD/t) — siempre editable</div>
       <a class="param-source src-oficial" id="zoneSource" target="_blank" rel="noopener"
-         href="/api/costos">📡 AGBI · AZ Group · dato crudo</a>
+         href="https://www.agbi.com.ar/#/cultivos">📡 AGBI · AZ Group · ver en agbi.com.ar</a>
     </div>
     <select id="zoneSelect" onchange="onZoneChange()" style="font-family:inherit;font-size:14px;font-weight:600;color:var(--c-ink,#3a3a3a);padding:9px 14px;border-radius:9px;border:1px solid #d8d2c8;background:#fff;min-width:180px;cursor:pointer"></select>
   </div>
@@ -670,7 +670,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <div class="param-hint" id="basePrecioHint">USD/t · Precio de referencia del mercado de futuros</div>
       </div>
       <a class="param-source src-oficial" id="basePrecioSource" target="_blank" rel="noopener"
-         href="/api/sheets?tab=agropecuarios">📡 Forward Matba Rofex · dato crudo</a>
+         href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289">📡 Forward Matba Rofex · planilla A3</a>
     </div>
 
     <div class="param-card accent" id="strikeCard">
@@ -707,7 +707,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <div class="param-hint" id="primaHint">USD/t · Prima pagada</div>
       </div>
       <a class="param-source src-oficial" id="primaSource" target="_blank" rel="noopener"
-         href="/api/sheets?tab=agropecuarios">📡 Prima real de opción Matba · dato crudo</a>
+         href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289">📡 Prima real de opción Matba · planilla A3</a>
     </div>
 
     <div class="param-card orange" id="primaCallCard" style="display:none">
@@ -717,7 +717,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <div class="param-hint">USD/t · Prima recibida por vender el CALL</div>
       </div>
       <a class="param-source src-oficial" id="primaCallSource" target="_blank" rel="noopener"
-         href="/api/sheets?tab=agropecuarios">📡 Prima real de opción Matba · dato crudo</a>
+         href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289">📡 Prima real de opción Matba · planilla A3</a>
     </div>
 
     <div class="param-card red" id="barreraCard" style="display:none">
@@ -736,7 +736,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
         <div class="param-hint">USD/t · Para calcular margen neto por escenario</div>
       </div>
       <a class="param-source src-oficial" id="costoSource" target="_blank" rel="noopener"
-         href="/api/costos">📡 Precio de equilibrio AGBI · dato crudo</a>
+         href="https://www.agbi.com.ar/#/cultivos">📡 Precio de equilibrio AGBI · ver en agbi.com.ar</a>
     </div>
 
   </div>
@@ -851,7 +851,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
   <!-- ── PROCEDENCIA DE LOS DATOS ── -->
   <div class="section-header" style="margin-bottom:16px">
     <h1 style="font-size:16px">Procedencia de los Datos</h1>
-    <p>De dónde sale cada valor. Los datos de mercado <strong>no tienen una página web simple</strong> que los muestre: por eso cada uno enlaza al <strong>dato crudo</strong> — el archivo/respuesta exacta que la app leyó, donde el número aparece tal cual (sin tener que buscar en sitios institucionales).</p>
+    <p>Cada dato enlaza a la <strong>página pública original donde está publicado</strong>. El valor que muestra esta herramienta debe coincidir con el de esa fuente — si no coincide, mandan la fuente.</p>
   </div>
   <div class="sources-card">
     <div class="sources-card-header">
@@ -871,7 +871,7 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
           <tr>
             <td>Precio Base / Posición — Mes de contrato</td>
             <td><span class="src-type t-of">📡 Mercado</span></td>
-            <td>Precio del <strong>futuro (forward) de Matba Rofex</strong> para el mes elegido, leído de la planilla pública de mercado <strong>A3 (Matba Rofex / Primary)</strong>. <strong>Abrí el dato crudo (contiene el número exacto):</strong> <span id="srcAgroLink"><a href="/api/sheets?tab=agropecuarios" target="_blank" rel="noopener">dato crudo de la app (JSON) →</a></span>. El menú de meses lista solo las posiciones con futuro cotizado.</td>
+            <td>Precio del <strong>futuro (forward) de Matba Rofex</strong> para el mes elegido, publicado en la planilla pública <strong>A3 (Matba Rofex / Primary)</strong>. El valor debe coincidir con el de la fuente: <span id="srcAgroLink"><a href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289" target="_blank" rel="noopener">planilla pública A3 · Agropecuarios →</a></span>. El menú de meses lista solo las posiciones con futuro cotizado.</td>
           </tr>
           <tr>
             <td>Strike — Precio de Ejercicio</td>
@@ -896,22 +896,22 @@ table.data-table tr.row-highlight td:first-child { border-left: 3px solid var(--
           <tr>
             <td>Costo de Producción / Zona</td>
             <td><span class="src-type t-of">📡 Fuente externa</span></td>
-            <td>Precio de equilibrio (break-even, USD/t) de <strong>AGBI · AZ Group</strong> para la zona y campaña elegidas. <strong>Abrí el dato crudo (contiene el número exacto):</strong> <span id="srcCostoLink"><a href="/api/costos" target="_blank" rel="noopener">dato crudo de la app (JSON) →</a></span>. Es editable: podés cargar tu costo real. AGBI no publica todos los cultivos (ej. trigo).</td>
+            <td>Precio de equilibrio (break-even, USD/t) de <strong>AGBI · AZ Group</strong> para la zona y campaña elegidas. El valor debe coincidir con el de la fuente: <span id="srcCostoLink"><a href="https://www.agbi.com.ar/#/cultivos" target="_blank" rel="noopener">agbi.com.ar/#/cultivos →</a></span>. Es editable: podés cargar tu costo real. AGBI no publica todos los cultivos (ej. trigo).</td>
           </tr>
           <tr>
             <td>FAS al productor</td>
             <td><span class="src-type t-of">📡 Oficial</span></td>
-            <td>FAS teórico oficial de la DINEM (MAGYP). <strong>Dato crudo:</strong> <a href="/api/fas" target="_blank" rel="noopener">respuesta de la app (JSON) →</a> · Origen: <a href="https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx" target="_blank" rel="noopener">DINEM — FAS Teórico</a>.</td>
+            <td>FAS teórico oficial de la DINEM (MAGYP). El valor debe coincidir con el de la fuente: <a href="https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx" target="_blank" rel="noopener">DINEM — FAS Teórico →</a>.</td>
           </tr>
           <tr>
             <td>FOB oficial (referencia)</td>
             <td><span class="src-type t-of">📡 Oficial</span></td>
-            <td>Precio FOB oficial de la DINEM (MAGYP); base de respaldo si no hay forward Matba. <strong>Dato crudo:</strong> <a href="/api/fob" target="_blank" rel="noopener">respuesta de la app (JSON) →</a> · Origen: <a href="https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx" target="_blank" rel="noopener">DINEM — Precios FOB</a>.</td>
+            <td>Precio FOB oficial de la DINEM (MAGYP); base de respaldo si no hay forward Matba. El valor debe coincidir con el de la fuente: <a href="https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx" target="_blank" rel="noopener">DINEM — Precios FOB →</a>.</td>
           </tr>
           <tr>
             <td>Dólar futuro</td>
             <td><span class="src-type t-of">📡 Mercado</span></td>
-            <td>Dólar futuro (ROFEX) para pesificar el FAS. <strong>Dato crudo:</strong> <a href="/api/tc" target="_blank" rel="noopener">respuesta de la app (JSON) →</a> · Origen: <a href="https://mercados.ambito.com/dolarfuturo/general" target="_blank" rel="noopener">Ámbito — Dólar Futuro ROFEX</a>.</td>
+            <td>Dólar futuro (ROFEX) para pesificar el FAS, publicado en la planilla pública <strong>A3 · Financiero</strong>. El valor debe coincidir con el de la fuente: <a href="https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=2027743157#gid=2027743157" target="_blank" rel="noopener">planilla pública A3 · Financiero →</a>.</td>
           </tr>
           <tr>
             <td>Girasol</td>
@@ -1352,21 +1352,17 @@ let LIVE = { chains:{}, tc:null, fas:{}, fobSpot:{}, fecha:null,
              agroUrl:null, costoUrl:null,
              loaded:false, fromCache:false, cacheTs:0 };
 
-// Links IRREFUTABLES: abren el dato crudo exacto que la app leyó (no páginas
-// institucionales). Nivel 1 = endpoint de la propia app (mismo dominio, JSON con
-// el número). Nivel 2 = archivo original de terceros (CSV/xlsx) que la app descargó.
+// Páginas ORIGINALES públicas donde el dato está publicado (confirmadas).
+// El número que muestra la app debe coincidir con el de estas fuentes.
 const SRC = {
-  // Nivel 1 — respuesta de la propia app (contiene el número exacto usado)
-  apiForward: '/api/sheets?tab=agropecuarios',
-  apiCostos:  '/api/costos',
-  apiFob:     '/api/fob',
-  apiFas:     '/api/fas',
-  apiTc:      '/api/tc',
-  // Nivel 2 — archivo crudo original (fuente literal, fuera del control de la app)
-  csvA3:      'https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/gviz/tq?tqx=out:csv&gid=527444289',
-  xlsxAgbi:   'https://www.agbi.com.ar/uploads/AZimport.xlsx',
-  fasDinem:   'https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx',
-  fobDinem:   'https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx',
+  // Planilla pública A3 (Matba Rofex / Primary) — pestaña Agropecuarios (futuros + opciones)
+  a3Agro:   'https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=527444289#gid=527444289',
+  // Planilla pública A3 — pestaña Financiero (dólar futuro)
+  a3Dolar:  'https://docs.google.com/spreadsheets/d/1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/edit?gid=2027743157#gid=2027743157',
+  // AGBI · AZ Group — costos de producción por zona/cultivo
+  agbi:     'https://www.agbi.com.ar/#/cultivos',
+  fasDinem: 'https://dinem.magyp.gob.ar/dinem_fas.cfas_all.aspx',
+  fobDinem: 'https://dinem.magyp.gob.ar/dinem_fob.wp_fob_conslista.aspx',
 };
 
 // Setea un badge de procedencia (Oficial/Calculado/Insumo) con su link
@@ -1386,16 +1382,16 @@ function updateSourceBadges() {
   const crop = currentCrop;
   const m = currentMonthEntry();
   const isGirasol = crop === 'girasol';
-  // Badges → dato crudo exacto que la app leyó (endpoint propio, contiene el número)
-  const fwdUrl   = SRC.apiForward;
-  const costoUrl = SRC.apiCostos;
+  // Badges → página ORIGINAL donde el dato está publicado
+  const fwdUrl   = SRC.a3Agro;
+  const costoUrl = SRC.agbi;
 
   // Precio base + selector de mes (Forward Matba)
   if (m) {
-    setBadge('basePrecioSource', 'src-oficial', `📡 Forward Matba ${m.label} = US$${m.future.toFixed(1)} · ver dato crudo →`, fwdUrl);
-    setBadge('monthSource', 'src-oficial', '📡 Forward Matba Rofex · abrir dato crudo (futuro por mes) →', fwdUrl);
+    setBadge('basePrecioSource', 'src-oficial', `📡 Forward Matba ${m.label} = US$${m.future.toFixed(1)} · planilla A3 →`, fwdUrl);
+    setBadge('monthSource', 'src-oficial', '📡 Forward Matba Rofex · ver en planilla pública A3 →', fwdUrl);
   } else if (!isGirasol && LIVE.fobSpot && LIVE.fobSpot[crop] > 0) {
-    setBadge('basePrecioSource', 'src-oficial', `📡 FOB oficial DINEM/MAGYP = US$${Math.round(LIVE.fobSpot[crop])} · ver dato crudo →`, SRC.apiFob);
+    setBadge('basePrecioSource', 'src-oficial', `📡 FOB oficial DINEM/MAGYP = US$${Math.round(LIVE.fobSpot[crop])} · ver en DINEM →`, SRC.fobDinem);
     setBadge('monthSource', 'src-insumo', '✍️ Sin forward Matba para este cultivo · base editable', fwdUrl);
   } else if (isGirasol) {
     setBadge('basePrecioSource', 'src-insumo', '✍️ Insumo · sin forward Matba de girasol — ingresá el precio', fwdUrl);
@@ -1408,7 +1404,7 @@ function updateSourceBadges() {
   // Primas: reales si vienen de la cadena de opciones, si no estimadas
   const primaReal = !!primaSourceNote && !!m;
   ['primaSource', 'primaCallSource'].forEach(id => {
-    if (primaReal) setBadge(id, 'src-oficial', '📡 Prima real de opción Matba (valor teórico) · ver dato crudo →', fwdUrl);
+    if (primaReal) setBadge(id, 'src-oficial', '📡 Prima real de opción Matba (valor teórico) · planilla A3 →', fwdUrl);
     else           setBadge(id, 'src-insumo', '✍️ Estimada (≈% del base) · prima real de opción Matba — editable', fwdUrl);
   });
 
@@ -1416,20 +1412,18 @@ function updateSourceBadges() {
   const c = costoFor(crop, currentZone);
   if (c && c.costoProd != null) {
     const camp = LIVE.campana ? ' · ' + LIVE.campana : '';
-    setBadge('costoSource', 'src-oficial', `📡 AGBI ${currentZone}${camp} = US$${c.costoProd}/t · ver dato crudo →`, costoUrl);
-    setBadge('zoneSource', 'src-oficial', '📡 Costos AGBI · AZ Group · abrir dato crudo (por zona) →', costoUrl);
+    setBadge('costoSource', 'src-oficial', `📡 AGBI ${currentZone}${camp} = US$${c.costoProd}/t · ver en AGBI →`, costoUrl);
+    setBadge('zoneSource', 'src-oficial', '📡 Costos AGBI · AZ Group · ver en agbi.com.ar →', costoUrl);
   } else {
     setBadge('costoSource', 'src-insumo', '✍️ Insumo · ingresá tu costo (AGBI no cubre este caso)', costoUrl);
     setBadge('zoneSource', 'src-insumo', '✍️ Sin costos AGBI para este cultivo · costo editable', costoUrl);
   }
 
-  // Panel "Procedencia": link al dato crudo de la app (Nivel 1) + archivo original (Nivel 2)
+  // Panel "Procedencia": links a las páginas originales publicadas
   const a = document.getElementById('srcAgroLink');
-  if (a) a.innerHTML = `<a href="${SRC.apiForward}" target="_blank" rel="noopener">dato crudo de la app (JSON) →</a>`
-    + ` · <a href="${SRC.csvA3}" target="_blank" rel="noopener">planilla original A3 (CSV) →</a>`;
+  if (a) a.innerHTML = `<a href="${SRC.a3Agro}" target="_blank" rel="noopener">planilla pública A3 · Agropecuarios →</a>`;
   const cl = document.getElementById('srcCostoLink');
-  if (cl) cl.innerHTML = `<a href="${SRC.apiCostos}" target="_blank" rel="noopener">dato crudo de la app (JSON) →</a>`
-    + ` · <a href="${SRC.xlsxAgbi}" target="_blank" rel="noopener">archivo original AGBI (.xlsx) →</a>`;
+  if (cl) cl.innerHTML = `<a href="${SRC.agbi}" target="_blank" rel="noopener">agbi.com.ar/#/cultivos →</a>`;
   const upd = document.getElementById('sourcesUpdated');
   if (upd) {
     if (LIVE.loaded) {
